@@ -1,13 +1,15 @@
-/* Universal realtime client (drop-in window.supabase replacement) for VA430/530 Data and Art.
-   Combines:
-   1. Dual-broker MQTT over WebSockets (EMQX + HiveMQ) with retained messages for instant cross-device
-      sync between presenter laptop and student phones (ratings, concept network words, phase, and live slider ghosts).
-   2. BroadcastChannel + localStorage for instant same-device multi-tab testing and offline resilience. */
+/* Universal multi-transport realtime client (drop-in window.supabase replacement) for VA430/530 Data and Art.
+   Combines 3 independent transport layers so classroom Wi-Fi (eduroam) or cellular firewalls never block the exercise:
+   1. Port-443 HTTPS + WSS Relay (ntfy.sh JSON history + WebSocket + periodic HTTPS poll fallback) — passes through strict Port-443-only campus firewalls.
+   2. Dual-broker MQTT over WebSockets (EMQX + HiveMQ) with retained messages — handles instant cross-device state + live moving slider ghosts.
+   3. BroadcastChannel + localStorage — instant same-device multi-tab testing and offline resilience. */
 (() => {
   const BROKERS = [
     "wss://broker.emqx.io:8084/mqtt",
     "wss://broker.hivemq.com:8884/mqtt"
   ];
+  const ntfyTopic = s => `va430_su_${String(s).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+
   const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("stub-supabase") : null;
   const load = () => { try { return JSON.parse(localStorage.getItem("stub-db") || "{}"); } catch (e) { return {}; } };
   const save = d => { try { localStorage.setItem("stub-db", JSON.stringify(d)); } catch (e) {} };
@@ -20,7 +22,10 @@
   const presence = {};
   const mqttClients = [];
   const subscribedSessions = new Set();
+  const ntfySockets = new Map();
   const seenRowKeys = new Set();
+  let lastNtfyPhase = "";
+  let lastNtfyPhaseTs = 0;
 
   const rowKey = (table, r) => {
     if (!r) return "";
@@ -72,8 +77,100 @@
     return false;
   }
 
+  function handleRemotePacket(session, pkt) {
+    if (!pkt || typeof pkt !== "object") return;
+    if (pkt.resetAt && pkt.resetAt > getResetAt(session)) {
+      clearLocalSession(session, pkt.resetAt);
+    }
+    if (pkt.kind === "phase" && pkt.phase) {
+      lastNtfyPhase = pkt.phase;
+      setPhase(pkt.phase);
+      deliver({ kind: "broadcast", name: "va430-room-" + session, event: "phase", payload: { phase: pkt.phase } });
+    } else if (pkt.kind === "ratings" && pkt.row) {
+      ingestRow("va430_ratings", pkt.row);
+    } else if (pkt.kind === "words" && pkt.row) {
+      ingestRow("va430_words", pkt.row);
+    }
+  }
+
+  /* -------- Layer 1: Port-443 HTTPS + WSS (ntfy.sh) -------- */
+  function ensureNtfy(session) {
+    if (!session || ntfySockets.has(session)) return;
+    const topic = ntfyTopic(session);
+    const state = { ws: null, lastTime: 0, pollTimer: null };
+    ntfySockets.set(session, state);
+
+    const fetchHistory = async () => {
+      try {
+        const since = state.lastTime ? String(state.lastTime) : "all";
+        const res = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=${since}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const text = await res.text();
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        let latestPhase = null;
+        for (const line of lines) {
+          try {
+            const env = JSON.parse(line);
+            if (env.time && env.time > state.lastTime) state.lastTime = env.time;
+            if (env.event === "message" && env.message) {
+              const pkt = JSON.parse(env.message);
+              if (pkt.resetAt && pkt.resetAt > getResetAt(session)) {
+                clearLocalSession(session, pkt.resetAt);
+              }
+              if (pkt.kind === "phase" && pkt.phase) latestPhase = pkt.phase;
+              else handleRemotePacket(session, pkt);
+            }
+          } catch (e) {}
+        }
+        if (latestPhase) {
+          lastNtfyPhase = latestPhase;
+          setPhase(latestPhase);
+          deliver({ kind: "broadcast", name: "va430-room-" + session, event: "phase", payload: { phase: latestPhase } });
+        }
+      } catch (e) {}
+    };
+
+    fetchHistory();
+
+    const connectWs = () => {
+      try {
+        const ws = new WebSocket(`wss://ntfy.sh/${topic}/ws`);
+        state.ws = ws;
+        ws.onmessage = ev => {
+          try {
+            const env = JSON.parse(ev.data);
+            if (env.time && env.time > state.lastTime) state.lastTime = env.time;
+            if (env.event === "message" && env.message) {
+              handleRemotePacket(session, JSON.parse(env.message));
+            }
+          } catch (e) {}
+        };
+        ws.onclose = () => { setTimeout(connectWs, 4000); };
+      } catch (e) {}
+    };
+    connectWs();
+
+    // Lightweight Port-443 HTTPS poll every 4.5s as ultimate fallback if campus proxy blocks WebSockets
+    state.pollTimer = setInterval(fetchHistory, 4500);
+  }
+
+  function pubNtfy(session, pkt) {
+    if (!session) return;
+    const topic = ntfyTopic(session);
+    try {
+      fetch(`https://ntfy.sh/${topic}`, {
+        method: "POST",
+        body: JSON.stringify(pkt),
+        keepalive: true
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
+  /* -------- Layer 2: Dual-Broker MQTT over WebSockets -------- */
   function ensureMqtt(session) {
-    if (!session || typeof window.mqtt === "undefined") return;
+    if (!session) return;
+    ensureNtfy(session);
+    if (typeof window.mqtt === "undefined") return;
     const topicRoot = `va430/${session}`;
     if (!mqttClients.length) {
       BROKERS.forEach(url => {
@@ -158,6 +255,7 @@
     if (bc) bc.postMessage({ kind: "reset", session, resetAt: ts });
     ensureMqtt(session);
     pubMqtt(`va430/${session}/phase`, { phase: currentPhase, resetAt: ts, ts }, true);
+    pubNtfy(session, { kind: "phase", phase: currentPhase, resetAt: ts, ts });
   };
 
   window.supabase = {
@@ -194,8 +292,10 @@
               deliver(msg);
               if (table === "va430_ratings") {
                 pubMqtt(`va430/${s}/ratings/${fullRow.round}/${encodeURIComponent(fullRow.device)}`, fullRow, true);
+                pubNtfy(s, { kind: "ratings", row: fullRow, ts: fullRow.ts });
               } else if (table === "va430_words") {
                 pubMqtt(`va430/${s}/words/${encodeURIComponent(fullRow.device)}`, fullRow, true);
+                pubNtfy(s, { kind: "words", row: fullRow, ts: fullRow.ts });
               }
               return Promise.resolve({ error: null });
             }
@@ -223,9 +323,16 @@
             },
             send(m) {
               if (m.event === "phase" && m.payload && m.payload.phase) {
-                setPhase(m.payload.phase);
+                const nextPhase = m.payload.phase;
+                setPhase(nextPhase);
                 if (session) {
-                  pubMqtt(`va430/${session}/phase`, { phase: m.payload.phase, resetAt: getResetAt(session), ts: Date.now() }, true);
+                  pubMqtt(`va430/${session}/phase`, { phase: nextPhase, resetAt: getResetAt(session), ts: Date.now() }, true);
+                  const now = Date.now();
+                  if (nextPhase !== lastNtfyPhase || now - lastNtfyPhaseTs > 45000) {
+                    lastNtfyPhase = nextPhase;
+                    lastNtfyPhaseTs = now;
+                    pubNtfy(session, { kind: "phase", phase: nextPhase, resetAt: getResetAt(session), ts: now });
+                  }
                 }
               }
               const msg = { kind: "broadcast", name, event: m.event, payload: m.payload };
