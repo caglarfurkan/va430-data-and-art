@@ -18,6 +18,9 @@
   [hidden] { display: none !important; }
   main { max-width: 520px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 22px; min-height: 100dvh; box-sizing: border-box; }
   .top { display: flex; justify-content: space-between; font: 400 13px var(--mono); color: var(--mute); }
+  .testbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 10px; background: var(--bg-2); border: 1px dashed var(--rule); font: 400 12px var(--mono); color: var(--mute); }
+  .testbar button { width: auto; padding: 5px 9px; font: 500 12px var(--mono); background: transparent; color: var(--ink); border: 1px solid var(--rule); }
+  .testbar button.on { background: var(--ikb); border-color: var(--ikb); color: #fff; }
   h1 { font: 800 52px/.92 var(--display); font-stretch: 70%; margin: 6px 0 0; letter-spacing: -.01em; }
   p { margin: 0; font-size: 18px; line-height: 1.4; color: var(--mute); }
   .axis { display: flex; flex-direction: column; gap: 10px; padding: 16px 0; border-top: 1px solid var(--rule); }
@@ -57,10 +60,17 @@
 <body>
 <main>
   <div class="top"><span>VA430 / 530 · Data and Art</span><span id="conn">connecting…</span></div>
+  <div class="testbar" id="testBar" hidden>
+    <span>Step:</span>
+    <button type="button" data-tp="r1">Round 1</button>
+    <button type="button" data-tp="r2">Round 2</button>
+    <button type="button" data-tp="words">Words / Network</button>
+    <button type="button" id="testReset" style="margin-left:auto; color:var(--warn)">Reset my vote</button>
+  </div>
 
   <section id="vWait">
     <h1>Look at the screen.</h1>
-    <p style="margin-top:14px">The next step opens here by itself. Keep this page open.</p>
+    <p style="margin-top:14px">The next step opens here automatically when the slide reaches the live exercise.</p>
   </section>
 
   <section id="vRate" hidden>
@@ -72,17 +82,24 @@
   </section>
 
   <section id="vWord" hidden>
-    <h1>One word.</h1>
-    <p style="margin-top:12px">What did no slider capture?</p>
-    <div style="display:flex; flex-direction:column; gap:14px; margin-top:18px">
-      <input type="text" id="word" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="One word">
-      <button type="button" id="sendWord">Send</button>
+    <h1>Concept network.</h1>
+    <p style="margin-top:12px">Write words or short concepts this painting brings to mind. You can send more than one.</p>
+    <div id="catRow" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px">
+      <button type="button" class="cat-chip" data-cat="form" style="width:auto; padding:8px 12px; font-size:14px; background:var(--bg-2); color:var(--ink); border:1px solid var(--rule)">Form &amp; Color</button>
+      <button type="button" class="cat-chip" data-cat="mood" style="width:auto; padding:8px 12px; font-size:14px; background:var(--bg-2); color:var(--ink); border:1px solid var(--rule)">Mood</button>
+      <button type="button" class="cat-chip" data-cat="figure" style="width:auto; padding:8px 12px; font-size:14px; background:var(--bg-2); color:var(--ink); border:1px solid var(--rule)">Figures &amp; Space</button>
+      <button type="button" class="cat-chip" data-cat="context" style="width:auto; padding:8px 12px; font-size:14px; background:var(--bg-2); color:var(--ink); border:1px solid var(--rule)">Social Context</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px; margin-top:14px">
+      <input type="text" id="word" maxlength="32" placeholder="e.g. leisure, rigid posture, heat…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Word or short concept">
+      <button type="button" id="sendWord">Add to network</button>
       <p class="err" id="wordErr" hidden></p>
+      <div id="sentWords" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px"></div>
     </div>
   </section>
 
   <section id="vDone" hidden>
-    <p class="big" id="doneText">Thank you.</p>
+    <p class="big" id="doneText">Sent.</p>
     <p style="margin-top:14px">Watch the screen.</p>
     <div class="mine" id="mine" hidden>
       <h2>You and the class</h2>
@@ -91,20 +108,21 @@
   </section>
 
   <section id="vClosed" hidden>
-    <h1>Thank you.</h1>
+    <h1>Done.</h1>
     <p style="margin-top:14px">This poll is closed.</p>
   </section>
 
   <section id="vOff" hidden>
-    <h1>Not set up yet.</h1>
-    <p style="margin-top:14px">This poll has no connection settings. Ask the person presenting.</p>
+    <h1>Not connected.</h1>
+    <p style="margin-top:14px">This poll has no connection settings yet.</p>
   </section>
 
   <div class="spacer"></div>
-  <p class="foot">No names are collected. Your phone gets a random id so your two rounds can be compared. Answers can be seen by everyone in the room.</p>
+  <p class="foot">Anonymous session. Your phone uses a random ID so Round 1 and Round 2 can be linked on screen.</p>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script src="../stub-supabase.js"></script>
 <script src="../config.js"></script>
 <script>
 (() => {
@@ -117,7 +135,8 @@
 
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
   };
   let device = store.get("va430-device");
   if (!device) {
@@ -128,9 +147,57 @@
 
   if (!cfg.url || !cfg.key || !window.supabase || !/^va430-[\w.-]{1,54}$/.test(S)) { show("vOff"); $("#conn").textContent = "offline"; return; }
 
+  const isStub = cfg.url === "stub" || cfg.url === "relay";
   const sb = window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: false } });
-  let phase = "wait";
+  const savedStubPhase = isStub ? store.get("stub-phase") : "";
+  let phase = (savedStubPhase && ["r1", "r2", "words"].includes(savedStubPhase)) ? savedStubPhase : "r1";
   const vals = { cool: 50, tense: 50, chaos: 50, deep: 50 };
+  let activeCat = "";
+  let wordSeq = +(store.get(`va430-wseq-${S}`) || 0);
+  let myWords = [];
+  try { myWords = JSON.parse(store.get(`va430-mywords-${S}`) || "[]"); } catch (e) {}
+
+  if (isStub) {
+    const tb = $("#testBar");
+    tb.hidden = false;
+    tb.querySelectorAll("button[data-tp]").forEach(b => {
+      b.addEventListener("click", () => {
+        phase = b.dataset.tp;
+        store.set("stub-phase", phase);
+        render(); track();
+      });
+    });
+    $("#testReset").addEventListener("click", () => {
+      store.del(doneKey("r1"));
+      store.del(doneKey("r2"));
+      myWords = [];
+      wordSeq = 0;
+      store.del(`va430-wseq-${S}`);
+      store.del(`va430-mywords-${S}`);
+      device = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + "00000000");
+      store.set("va430-device", device);
+      render();
+    });
+  }
+
+  function renderSentWords() {
+    const box = $("#sentWords");
+    if (!box) return;
+    box.innerHTML = myWords.map(w => `<span style="font:500 13px var(--mono); background:var(--bg-2); border:1px solid var(--ikb); padding:4px 10px; color:var(--ink)">${w.replace(/[&<>]/g, "")}</span>`).join("");
+  }
+  renderSentWords();
+
+  document.querySelectorAll(".cat-chip").forEach(b => {
+    b.addEventListener("click", () => {
+      activeCat = activeCat === b.dataset.cat ? "" : b.dataset.cat;
+      document.querySelectorAll(".cat-chip").forEach(x => {
+        const on = x.dataset.cat === activeCat;
+        x.style.borderColor = on ? "var(--ikb)" : "var(--rule)";
+        x.style.background = on ? "var(--ikb)" : "var(--bg-2)";
+        x.style.color = on ? "#FFF" : "var(--ink)";
+      });
+    });
+  });
 
   $("#axes").innerHTML = AXES.map(([l, r, k]) => `
     <div class="axis">
@@ -187,13 +254,14 @@
   }
 
   function render() {
+    document.querySelectorAll("#testBar button[data-tp]").forEach(b => b.classList.toggle("on", b.dataset.tp === phase));
     if (phase === "r1" || phase === "r2") {
       if (store.get(doneKey(phase))) { $("#doneText").textContent = phase === "r1" ? "Round 1 sent." : "Round 2 sent."; show("vDone"); watchRatings(); drawMine(); return; }
       $("#rateTitle").textContent = phase === "r1" ? "Round 1" : "Round 2";
       show("vRate");
     } else if (phase === "words") {
-      if (store.get(doneKey("words"))) { $("#doneText").textContent = "Word sent."; show("vDone"); drawMine(); return; }
       show("vWord");
+      renderSentWords();
     } else if (phase === "closed") show("vClosed");
     else show("vWait");
   }
@@ -208,12 +276,19 @@
     store.set(doneKey(phase), "1"); track(); render();
   }
   async function sendWord() {
-    const w = $("#word").value.replace(/\s+/g, " ").trim().slice(0, 40); if (!w) return;
+    const raw = $("#word").value.replace(/\s+/g, " ").trim().slice(0, 32); if (!raw) return;
+    const payloadWord = activeCat ? `${activeCat}:${raw}`.slice(0, 40) : raw;
     const btn = $("#sendWord"); btn.disabled = true; $("#wordErr").hidden = true;
-    const { error } = await sb.from("va430_words").insert({ session: S, device, word: w });
+    wordSeq++;
+    const devKey = wordSeq === 1 ? device : `${device.slice(0, 48)}#${wordSeq}`;
+    const { error } = await sb.from("va430_words").insert({ session: S, device: devKey, word: payloadWord });
     btn.disabled = false;
     if (error && error.code !== "23505") { $("#wordErr").textContent = "Could not send. Try again."; $("#wordErr").hidden = false; return; }
-    store.set(doneKey("words"), "1"); render();
+    store.set(`va430-wseq-${S}`, String(wordSeq));
+    myWords.push(raw);
+    store.set(`va430-mywords-${S}`, JSON.stringify(myWords));
+    $("#word").value = "";
+    renderSentWords();
   }
   $("#send").addEventListener("click", send);
   $("#sendWord").addEventListener("click", sendWord);
@@ -223,6 +298,7 @@
   room.on("broadcast", { event: "phase" }, ({ payload }) => {
     const p = payload && payload.phase;
     if (["wait", "r1", "r2", "words", "closed"].includes(p) && p !== phase) {
+      if (isStub && p === "wait") return;
       phase = p;
       AXES.forEach(([, , k]) => { const el = $("#r-" + k); el.value = 50; el.classList.remove("moved"); vals[k] = 50; });
       render(); track();

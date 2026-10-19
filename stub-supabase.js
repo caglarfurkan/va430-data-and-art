@@ -1,0 +1,270 @@
+/* Universal realtime client (drop-in window.supabase replacement) for VA430/530 Data and Art.
+   Combines:
+   1. Dual-broker MQTT over WebSockets (EMQX + HiveMQ) with retained messages for instant cross-device
+      sync between presenter laptop and student phones (ratings, concept network words, phase, and live slider ghosts).
+   2. BroadcastChannel + localStorage for instant same-device multi-tab testing and offline resilience. */
+(() => {
+  const BROKERS = [
+    "wss://broker.emqx.io:8084/mqtt",
+    "wss://broker.hivemq.com:8884/mqtt"
+  ];
+  const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("stub-supabase") : null;
+  const load = () => { try { return JSON.parse(localStorage.getItem("stub-db") || "{}"); } catch (e) { return {}; } };
+  const save = d => { try { localStorage.setItem("stub-db", JSON.stringify(d)); } catch (e) {} };
+  const getPhase = () => { try { return localStorage.getItem("stub-phase") || ""; } catch (e) { return ""; } };
+  const setPhase = p => { try { localStorage.setItem("stub-phase", p); } catch (e) {} };
+  const getResetAt = s => { try { return +(localStorage.getItem("stub-reset-" + s) || 0); } catch (e) { return 0; } };
+  const setResetAt = (s, ts) => { try { localStorage.setItem("stub-reset-" + s, String(ts)); } catch (e) {} };
+
+  const channels = new Set();
+  const presence = {};
+  const mqttClients = [];
+  const subscribedSessions = new Set();
+  const seenRowKeys = new Set();
+
+  const rowKey = (table, r) => {
+    if (!r) return "";
+    return table === "va430_ratings"
+      ? `r:${r.session}:${r.round}:${r.device}`
+      : `w:${r.session}:${r.device}`;
+  };
+
+  const deliver = msg => channels.forEach(ch => ch._recv(msg));
+
+  function clearLocalSession(session, resetTs) {
+    setResetAt(session, resetTs);
+    const d = load();
+    ["va430_ratings", "va430_words"].forEach(t => {
+      if (Array.isArray(d[t])) d[t] = d[t].filter(r => r.session !== session);
+    });
+    save(d);
+    for (const k of [...seenRowKeys]) {
+      if (k.includes(`:${session}:`)) seenRowKeys.delete(k);
+    }
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.includes(session) && (k.startsWith("va430-done-") || k.startsWith("va430-mine-") || k.startsWith("va430-wseq-") || k.startsWith("va430-mywords-"))) {
+          localStorage.removeItem(k);
+        }
+      }
+    } catch (e) {}
+    deliver({ kind: "reset", session, resetAt: resetTs });
+  }
+
+  function ingestRow(table, row) {
+    if (!row || !row.session || !row.device) return false;
+    const resetAt = getResetAt(row.session);
+    if (row.ts && resetAt && row.ts < resetAt) return false;
+    const rk = rowKey(table, row);
+    const d = load();
+    d[table] = d[table] || [];
+    const exists = d[table].some(r => r.session === row.session && r.device === row.device && (table !== "va430_ratings" || r.round === row.round));
+    if (!exists) {
+      d[table].push(row);
+      save(d);
+    }
+    if (!seenRowKeys.has(rk)) {
+      seenRowKeys.add(rk);
+      deliver({ kind: "insert", table, row });
+      return true;
+    }
+    return false;
+  }
+
+  function ensureMqtt(session) {
+    if (!session || typeof window.mqtt === "undefined") return;
+    const topicRoot = `va430/${session}`;
+    if (!mqttClients.length) {
+      BROKERS.forEach(url => {
+        try {
+          const client = window.mqtt.connect(url, {
+            keepalive: 30,
+            reconnectPeriod: 2500,
+            connectTimeout: 8000,
+            clean: true
+          });
+          client.on("connect", () => {
+            subscribedSessions.forEach(s => {
+              client.subscribe(`va430/${s}/#`, { qos: 0 });
+            });
+          });
+          client.on("message", (topic, payload) => {
+            let data = null;
+            try { data = JSON.parse(payload.toString()); } catch (e) { return; }
+            if (!data) return;
+            const parts = topic.split("/");
+            if (parts[0] !== "va430" || !parts[1]) return;
+            const s = parts[1], kind = parts[2];
+            if (kind === "phase") {
+              if (data.resetAt && data.resetAt > getResetAt(s)) {
+                clearLocalSession(s, data.resetAt);
+              }
+              if (data.phase) {
+                setPhase(data.phase);
+                deliver({ kind: "broadcast", name: "va430-room-" + s, event: "phase", payload: { phase: data.phase } });
+              }
+            } else if (kind === "ratings") {
+              ingestRow("va430_ratings", data);
+            } else if (kind === "words") {
+              ingestRow("va430_words", data);
+            } else if (kind === "presence" && data.key && data.meta) {
+              presence[data.key] = { ...data.meta, _ts: Date.now() };
+              deliver({ kind: "presence", name: "va430-room-" + s, key: data.key, meta: data.meta });
+            }
+          });
+          mqttClients.push(client);
+        } catch (e) {}
+      });
+    }
+    if (!subscribedSessions.has(session)) {
+      subscribedSessions.add(session);
+      mqttClients.forEach(c => {
+        try { if (c.connected) c.subscribe(`${topicRoot}/#`, { qos: 0 }); } catch (e) {}
+      });
+    }
+  }
+
+  function pubMqtt(topic, obj, retain = false) {
+    const str = JSON.stringify(obj);
+    mqttClients.forEach(c => {
+      try { c.publish(topic, str, { qos: retain ? 1 : 0, retain }); } catch (e) {}
+    });
+  }
+
+  if (bc) {
+    bc.onmessage = e => {
+      const m = e.data;
+      if (!m) return;
+      if (m.kind === "presence") presence[m.key] = { ...m.meta, _ts: Date.now() };
+      if (m.kind === "broadcast" && m.event === "phase" && m.payload && m.payload.phase) setPhase(m.payload.phase);
+      if (m.kind === "insert" && m.table && m.row) { ingestRow(m.table, m.row); return; }
+      if (m.kind === "reset" && m.session && m.resetAt) { clearLocalSession(m.session, m.resetAt); return; }
+      deliver(m);
+    };
+  }
+
+  addEventListener("storage", e => {
+    if (e.key === "stub-phase" && e.newValue) {
+      subscribedSessions.forEach(s => {
+        deliver({ kind: "broadcast", name: "va430-room-" + s, event: "phase", payload: { phase: e.newValue } });
+      });
+    }
+  });
+
+  window.va430ResetLiveSession = (session, currentPhase = "r1") => {
+    const ts = Date.now();
+    clearLocalSession(session, ts);
+    if (bc) bc.postMessage({ kind: "reset", session, resetAt: ts });
+    ensureMqtt(session);
+    pubMqtt(`va430/${session}/phase`, { phase: currentPhase, resetAt: ts, ts }, true);
+  };
+
+  window.supabase = {
+    createClient() {
+      return {
+        from(table) {
+          return {
+            select() {
+              return {
+                eq(col, val) {
+                  if (col === "session" && val) ensureMqtt(val);
+                  const resetAt = col === "session" ? getResetAt(val) : 0;
+                  const rows = (load()[table] || []).filter(r => r[col] === val && (!r.ts || !resetAt || r.ts >= resetAt));
+                  rows.forEach(r => seenRowKeys.add(rowKey(table, r)));
+                  return Promise.resolve({ data: rows, error: null });
+                }
+              };
+            },
+            insert(row) {
+              const s = row.session;
+              ensureMqtt(s);
+              const resetAt = getResetAt(s);
+              const d = load();
+              d[table] = (d[table] || []).filter(r => !r.ts || !resetAt || r.ts >= resetAt);
+              if (d[table].some(r => r.session === row.session && r.device === row.device && (table !== "va430_ratings" || r.round === row.round))) {
+                return Promise.resolve({ error: { code: "23505" } });
+              }
+              const fullRow = { ...row, ts: Date.now() };
+              d[table].push(fullRow);
+              save(d);
+              seenRowKeys.add(rowKey(table, fullRow));
+              const msg = { kind: "insert", table, row: fullRow };
+              if (bc) bc.postMessage(msg);
+              deliver(msg);
+              if (table === "va430_ratings") {
+                pubMqtt(`va430/${s}/ratings/${fullRow.round}/${encodeURIComponent(fullRow.device)}`, fullRow, true);
+              } else if (table === "va430_words") {
+                pubMqtt(`va430/${s}/words/${encodeURIComponent(fullRow.device)}`, fullRow, true);
+              }
+              return Promise.resolve({ error: null });
+            }
+          };
+        },
+        channel(name, opts) {
+          const sMatch = /^va430-(?:room|db)-(.+)$/.exec(name);
+          const session = sMatch ? sMatch[1] : "";
+          if (session) ensureMqtt(session);
+          const key = (opts && opts.config && opts.config.presence && opts.config.presence.key) || Math.random().toString(36).slice(2);
+          return {
+            handlers: [],
+            on(type, filter, cb) { this.handlers.push({ type, filter, cb }); return this; },
+            subscribe(cb) {
+              channels.add(this);
+              setTimeout(() => {
+                cb && cb("SUBSCRIBED");
+                this._sync();
+                const savedPhase = getPhase();
+                if (savedPhase) {
+                  this.handlers.filter(h => h.type === "broadcast" && h.filter.event === "phase").forEach(h => h.cb({ payload: { phase: savedPhase } }));
+                }
+              }, 30);
+              return this;
+            },
+            send(m) {
+              if (m.event === "phase" && m.payload && m.payload.phase) {
+                setPhase(m.payload.phase);
+                if (session) {
+                  pubMqtt(`va430/${session}/phase`, { phase: m.payload.phase, resetAt: getResetAt(session), ts: Date.now() }, true);
+                }
+              }
+              const msg = { kind: "broadcast", name, event: m.event, payload: m.payload };
+              if (bc) bc.postMessage(msg);
+              deliver(msg);
+              return Promise.resolve("ok");
+            },
+            track(meta) {
+              presence[key] = { ...meta, _ts: Date.now() };
+              const msg = { kind: "presence", name, key, meta };
+              if (bc) bc.postMessage(msg);
+              deliver(msg);
+              if (session) {
+                pubMqtt(`va430/${session}/presence/${encodeURIComponent(key)}`, { key, meta, ts: Date.now() }, false);
+              }
+              return Promise.resolve("ok");
+            },
+            presenceState() {
+              const now = Date.now(), o = {};
+              Object.entries(presence).forEach(([k, m]) => {
+                if (!m._ts || now - m._ts < 60000) o[k] = [m];
+              });
+              return o;
+            },
+            _sync() { this.handlers.filter(h => h.type === "presence").forEach(h => h.cb()); },
+            _recv(msg) {
+              if (msg.kind === "insert") {
+                this.handlers.filter(h => h.type === "postgres_changes" && h.filter.table === msg.table).forEach(h => h.cb({ new: msg.row }));
+              }
+              if (msg.kind === "broadcast" && (msg.name === name || msg.event === "phase")) {
+                this.handlers.filter(h => h.type === "broadcast" && h.filter.event === msg.event).forEach(h => h.cb({ payload: msg.payload }));
+              }
+              if (msg.kind === "presence" && msg.name === name) {
+                this._sync();
+              }
+            }
+          };
+        }
+      };
+    }
+  };
+})();

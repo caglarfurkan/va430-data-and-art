@@ -1,8 +1,7 @@
-// Public connection settings. The key is Supabase's publishable (anon) key, meant for browsers.
-// Never put the service_role / secret key here.
+// Public connection settings.
 window.LIVE = {
-  "url": "",
-  "key": "",
-  "session": "va430-test",
+  "url": "relay",
+  "key": "public-relay",
+  "session": "va430-2026-10-20",
   "pollUrl": "https://caglarfurkan.github.io/va430-data-and-art/p/"
 };

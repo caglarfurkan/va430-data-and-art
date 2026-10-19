@@ -65,7 +65,7 @@
   .accent { color: var(--ikb); }
   .dark .accent { color: var(--ikb-d); }
   .spacer { flex: 1; }
-  .src { position: absolute; left: 128px; bottom: 52px; font: 400 18px/1.4 var(--mono); color: var(--mute); max-width: 1300px; }
+  .src { position: absolute; left: 128px; bottom: 48px; font: 400 18px/1.4 var(--mono); color: var(--mute); max-width: 1664px; }
   .dark .src { color: var(--night-mute); }
   a { color: inherit; }
   .edit { border-bottom: 2px dashed currentColor; outline: none; cursor: text; }
@@ -114,20 +114,20 @@
 
   /* morph chart */
   .morph { display: grid; grid-template-columns: 380px 1fr; gap: 64px; flex: 1; align-items: start; }
-  .morph .modes { display: flex; flex-direction: column; gap: 12px; }
-  .morph .modes button { text-align: left; display: flex; justify-content: space-between; gap: 12px; }
+  .morph .modes { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 380px; }
+  .morph .modes button { width: 100%; box-sizing: border-box; text-align: left; display: flex; justify-content: space-between; gap: 12px; }
   .morph .modes button span { color: inherit; opacity: .6; }
   .morph-cap { font: 400 28px/1.35 var(--body); color: var(--mute); min-height: 80px; }
   .chartbox { position: relative; }
   .chartbox svg { display: block; overflow: visible; }
   .chartbox text { font-family: var(--mono); font-size: 20px; fill: var(--mute); }
   .chartbox .lbl { fill: var(--ink); font-size: 22px; }
-  .tip { position: absolute; pointer-events: none; transform: translate(-50%, calc(-100% - 14px)); background: var(--ink); color: var(--paper); font: 400 20px/1.4 var(--mono); padding: 10px 12px; white-space: nowrap; z-index: 5; }
+  .tip { position: absolute; pointer-events: none; transform: translate(-50%, calc(-100% - 14px)); background: var(--ink); color: var(--paper); font: 400 18px/1.4 var(--mono); padding: 10px 14px; white-space: nowrap; z-index: 10; box-shadow: 0 6px 20px rgba(0,0,0,.22); }
   .dark .tip { background: var(--night-ink); color: var(--night); }
 
   /* forms */
   .forms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 3px solid var(--ink); flex: 1; }
-  .form { padding: 26px 32px 22px 0; display: grid; grid-template-columns: 170px 1fr; gap: 24px; border-bottom: 1px solid var(--rule); align-items: start; }
+  .form { padding: 32px 32px 26px 0; display: grid; grid-template-columns: 170px 1fr; gap: 24px; border-bottom: 1px solid var(--rule); align-items: start; }
   .form svg { width: 170px; height: 130px; }
   .form svg * { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
   .form svg .fill { fill: var(--ikb); stroke: none; }
@@ -140,7 +140,7 @@
 
   /* data art */
   .artists { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 3px solid var(--night-ink); flex: 1; }
-  .artist { padding: 24px 28px 24px 0; border-bottom: 1px solid var(--night-rule); display: flex; flex-direction: column; gap: 8px; }
+  .artist { padding: 26px 28px 26px 0; border-bottom: 1px solid var(--night-rule); display: flex; flex-direction: column; gap: 8px; }
   .artist h3 { font: 700 40px/1 var(--display); font-stretch: 80%; }
   .artist .work { font: italic 400 26px/1.25 var(--body); color: var(--night-ink); }
   .artist p { font: 400 21px/1.4 var(--body); color: var(--night-mute); }
@@ -159,11 +159,17 @@
   .toolcard .fmts span { font: 400 18px var(--mono); border: 2px solid var(--ink); padding: 5px 9px; }
   .toolcard .used { font: 400 20px/1.45 var(--mono); color: var(--mute); border-left: 4px solid var(--ikb); padding-left: 12px; }
 
-  /* bloom (p5.js) */
-  .bloomgrid { display: grid; grid-template-columns: 640px 1fr; gap: 48px; flex: 1; align-items: start; min-height: 0; }
+  /* bloom (p5.js live editable) */
+  .bloomgrid { display: grid; grid-template-columns: 650px 1fr; gap: 44px; flex: 1; align-items: start; min-height: 0; }
   .codebox { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-  .codebox pre { margin: 0; background: var(--ink); color: #DCE0E6; font: 400 14px/1.45 var(--mono); padding: 16px 18px; overflow: hidden; white-space: pre; tab-size: 2; }
-  .bloomhost { width: 960px; height: 520px; background: var(--card); border: 1px solid var(--rule); }
+  .codebox-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .codebox textarea {
+    width: 100%; height: 540px; box-sizing: border-box; margin: 0; resize: none;
+    background: var(--ink); color: #EEF0F2; border: 2px solid var(--ink);
+    font: 400 16px/1.5 var(--mono); padding: 16px 18px; white-space: pre; overflow: auto; tab-size: 2;
+  }
+  .codebox textarea:focus { border-color: var(--ikb); outline: none; }
+  .bloomhost { position: relative; width: 960px; height: 485px; background: var(--card); border: 1px solid var(--rule); }
   .bloomhost canvas { display: block; }
 
   /* class portrait */
@@ -192,37 +198,51 @@
   .ctxfig img { width: 700px; max-height: 520px; object-fit: contain; display: block; background: var(--paper-2); }
   .ctx-ph { width: 700px; height: 460px; border: 3px dashed var(--rule); display: grid; place-items: center; font: 400 26px var(--mono); color: var(--mute); }
   .ctxlist { list-style: none; margin: 0; padding: 0; border-top: 3px solid var(--ink); }
-  .ctxlist li { display: flex; flex-direction: column; gap: 6px; padding: 18px 0; border-bottom: 1px solid var(--rule); font: 500 38px/1.2 var(--body); }
-  .wordwall { border: 2px dashed var(--rule); min-height: 200px; display: grid; place-items: center; font: 400 22px var(--mono); color: var(--mute); text-align: center; padding: 20px; }
+  .ctxlist li { display: flex; flex-direction: column; gap: 6px; padding: 18px 0; border-bottom: 1px solid var(--rule); font: 450 28px/1.32 var(--body); }
+  .wordwall { border: 2px dashed var(--rule); min-height: 180px; display: grid; place-items: center; font: 400 20px var(--mono); color: var(--mute); text-align: center; padding: 16px; }
 
   /* questions */
   .qs { list-style: none; margin: 0; padding: 0; border-top: 3px solid var(--ink); }
-  .qs li { display: grid; grid-template-columns: 1fr 420px; gap: 40px; padding: 22px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+  .qs li { display: grid; grid-template-columns: 1fr 420px; gap: 40px; padding: 20px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
   .qs .q { font: 600 46px/1.1 var(--display); font-stretch: 85%; }
   .qs .d { font: 400 22px/1.4 var(--mono); color: var(--mute); }
   .qs li.today .q { color: var(--ikb); }
   .qs li.today .d::before { content: "Today’s exercise · "; color: var(--ikb); }
 
-  /* art data layers */
-  .layers { position: relative; flex: 1; }
-  .layers .core { position: absolute; left: 640px; top: 160px; width: 384px; }
-  .layers .core img { width: 384px; display: block; }
-  .layers .ly { position: absolute; width: 420px; }
-  .layers .ly h3 { font: 700 40px/1 var(--display); font-stretch: 80%; }
-  .layers .ly p { font: 400 23px/1.35 var(--body); color: var(--mute); margin-top: 6px; }
-  .layers svg.links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .layers svg.links line { stroke: var(--rule); stroke-width: 2; }
+  /* art data layers (balanced symmetrical 3-column layout) */
+  .layers-grid {
+    display: grid; grid-template-columns: 490px 1fr 490px; gap: 36px; align-items: center; flex: 1; min-height: 0;
+  }
+  .layer-col { display: flex; flex-direction: column; gap: 22px; }
+  .layer-card {
+    background: var(--card); border: 1px solid var(--rule); border-top: 3px solid var(--ink);
+    padding: 22px 24px; position: relative;
+  }
+  .layer-card h3 { font: 700 40px/1 var(--display); font-stretch: 80%; }
+  .layer-card p { font: 400 23px/1.35 var(--body); color: var(--mute); margin-top: 6px; }
+  .layer-col.left .layer-card::after {
+    content: ""; position: absolute; right: -37px; top: 50%; width: 36px; height: 2px; background: var(--ink);
+  }
+  .layer-col.right .layer-card::before {
+    content: ""; position: absolute; left: -37px; top: 50%; width: 36px; height: 2px; background: var(--ink);
+  }
+  .layers-center {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--card); border: 2px solid var(--ink); padding: 20px;
+  }
+  .layers-center img { width: 100%; max-height: 440px; object-fit: cover; display: block; }
+  .layers-center span { font: 400 18px/1.3 var(--mono); color: var(--mute); margin-top: 12px; text-align: center; }
   .becomes { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font: 400 24px var(--mono); }
-  .becomes span.c { border: 2px solid var(--ink); padding: 8px 14px; }
+  .becomes span.c { border: 2px solid var(--ink); padding: 8px 14px; background: var(--card); }
 
   /* sources */
   .srcs { width: 100%; border-collapse: collapse; }
   .srcs th { text-align: left; font: 500 20px/1.3 var(--mono); color: var(--mute); padding: 0 24px 12px 0; border-bottom: 3px solid var(--ink); }
-  .srcs td { padding: 16px 24px 16px 0; border-bottom: 1px solid var(--rule); vertical-align: top; font: 400 23px/1.35 var(--body); }
+  .srcs td { padding: 15px 24px 15px 0; border-bottom: 1px solid var(--rule); vertical-align: top; font: 400 23px/1.35 var(--body); }
   .srcs td:first-child { font: 700 28px/1.1 var(--display); font-stretch: 85%; width: 330px; }
   .srcs td:first-child small { display: block; font: 400 18px/1.4 var(--mono); color: var(--mute); margin-top: 4px; font-stretch: 100%; }
   .srcs td:last-child { color: var(--mute); }
-  .keep { font: 750 64px/1 var(--display); font-stretch: 75%; }
+  .keep { font: 750 64px/1 var(--display); font-stretch: 75%; margin-top: auto; }
 
   /* evidence */
   .evidence { display: grid; grid-template-columns: 1fr 760px; gap: 80px; flex: 1; align-items: start; }
@@ -308,41 +328,27 @@
   .livechip i { width: 9px; height: 9px; border-radius: 50%; background: #9DA3AC; display: inline-block; }
   .livechip.on i { background: #3DDC84; }
   .livechip b { font-weight: 500; color: #6A75FF; }
-  .wordwall.live { display: flex; flex-wrap: wrap; gap: 6px 18px; align-content: flex-start; place-items: initial; text-align: left; }
-  .wordwall .w { font-family: var(--display); font-stretch: 80%; font-weight: 700; color: var(--ink); cursor: pointer; animation: pop .5s ease both; line-height: 1; }
+  .wordwall.live { display: flex; flex-wrap: wrap; gap: 8px 16px; align-content: flex-start; place-items: initial; text-align: left; }
+  .wordwall .w { font-family: var(--display); font-stretch: 80%; font-weight: 700; color: var(--night-ink); cursor: pointer; animation: pop .5s ease both; line-height: 1.05; }
   @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .qrbox svg { width: 100%; height: 100%; display: block; }
   .qrbox.has { border: 0; background: #EEF0F2; padding: 14px; box-sizing: border-box; }
   .legend { display: flex; gap: 36px; font: 400 22px var(--mono); align-items: center; }
   .legend i { display: inline-block; width: 22px; height: 22px; margin-right: 10px; vertical-align: -4px; }
 
-  /* discussion */
-  .disc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 56px; flex: 1; }
-  .disc div { border-top: 3px solid var(--ink); padding-top: 18px; display: flex; flex-direction: column; gap: 18px; }
-  .disc h3 { font: 800 110px/.9 var(--display); font-stretch: 68%; }
-  .disc p { font: 400 36px/1.25 var(--body); }
-
-  /* brief */
-  .flow { display: grid; grid-template-columns: 1fr 80px 1fr 80px 1fr; align-items: start; }
-  .flow .arrow { font: 400 80px/1 var(--display); text-align: center; padding-top: 10px; color: var(--mute); }
-  .flow h3 { font: 800 120px/.9 var(--display); font-stretch: 68%; }
-  .flow p { font: 400 28px/1.35 var(--body); color: var(--mute); margin-top: 14px; }
-  .dates { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 3px solid var(--ink); }
-  .dates div { padding: 20px 28px 0 0; }
-  .dates b { display: block; font: 750 54px/1 var(--display); font-stretch: 75%; }
-  .dates span { font: 400 24px/1.35 var(--body); color: var(--mute); }
-
-  /* paragraph */
-  .para { display: grid; grid-template-columns: 1fr 860px; gap: 72px; flex: 1; align-items: start; }
-  .tpl { font: 400 30px/1.5 var(--body); }
-  .tpl .blank { border-bottom: 3px solid var(--ikb); color: var(--mute); }
-  .example { font: 400 25px/1.5 var(--body); }
-  .example .q { box-shadow: inset 0 -6px 0 rgba(31, 46, 255, .35); }
-  .example .d { box-shadow: inset 0 -6px 0 rgba(232, 84, 30, .35); }
-  .example .f { box-shadow: inset 0 -6px 0 rgba(15, 16, 18, .25); }
-  .wc { font: 400 22px var(--mono); color: var(--mute); display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
-  .wc b { color: var(--ink); font-weight: 500; }
-  textarea#mine { width: 100%; height: 170px; box-sizing: border-box; font: 400 24px/1.4 var(--body); border: 2px solid var(--ink); background: var(--card); color: var(--ink); padding: 14px; resize: none; }
+  /* interactive concept network */
+  .cnet-grid { display: grid; grid-template-columns: 1120px 1fr; gap: 44px; flex: 1; min-height: 0; align-items: start; }
+  .cnet-box { position: relative; background: var(--night-2); border: 2px solid var(--night-rule); display: flex; flex-direction: column; }
+  .cnet-box canvas { width: 100%; height: 510px; display: block; cursor: grab; }
+  .cnet-box canvas:active { cursor: grabbing; }
+  .cnet-bar { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--night-rule); background: rgba(15, 16, 18, .9); flex-wrap: wrap; }
+  .cnet-bar input[type=text] { font: 400 18px var(--mono); background: var(--night); color: var(--night-ink); border: 2px solid var(--night-rule); padding: 8px 12px; flex: 1; min-width: 180px; }
+  .cnet-bar select { font: 500 17px var(--mono); background: var(--night); color: var(--night-ink); border: 2px solid var(--night-rule); padding: 8px 10px; }
+  .cnet-bar button.chip { font-size: 17px; padding: 8px 14px; }
+  .cnet-side { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .cnet-card { border-top: 3px solid var(--night-ink); padding-top: 14px; }
+  .cnet-card h3 { font: 750 36px/1.05 var(--display); font-stretch: 75%; margin-bottom: 6px; }
+  .cnet-card p { font: 400 21px/1.38 var(--body); color: var(--night-mute); }
 
   /* susam forms */
   .susam { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; flex: 1; }
@@ -363,6 +369,7 @@
   .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--ikb); transition: width .3s ease; z-index: 20; }
   .bar { position: fixed; right: 14px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 6px; align-items: center; z-index: 20; font: 400 13px var(--mono); }
   .bar button { font: 500 13px var(--mono); background: rgba(15, 16, 18, .72); color: #EEF0F2; border: 1px solid rgba(238, 240, 242, .25); padding: 7px 10px; cursor: pointer; border-radius: 0; }
+  .bar button[aria-pressed="true"] { background: #1F2EFF; border-color: #6A75FF; color: #FFF; }
   .bar .count { background: rgba(15, 16, 18, .72); color: #EEF0F2; padding: 7px 10px; font-variant-numeric: tabular-nums; }
   .notes { display: none; }
   .notes-panel {
@@ -371,7 +378,6 @@
   }
   .notes-panel b { font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #9DA3AC; display: block; margin-bottom: 6px; }
   .dropping .stage::after { content: "Drop the image"; position: absolute; inset: 40px; border: 6px dashed var(--ikb); display: grid; place-items: center; font: 750 96px var(--display); color: var(--ikb); background: rgba(238, 240, 242, .85); pointer-events: none; z-index: 30; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } .draw * { stroke-dashoffset: 0 !important; } }
 </style>
 
 <div class="progress" id="progress"></div>
@@ -379,19 +385,19 @@
 
   <!-- 1 · Cover -->
   <section class="slide" data-part="Opening">
-    <div class="meta"><span>VA430 / VA530 · Art Analysis · Fall 2026</span><span>Midterm session</span></div>
+    <div class="meta"><span>VA430 / VA530 · VAVCD · Sabancı University</span><span>Fall 2026</span></div>
     <div class="cover-grid">
       <div style="display:flex; flex-direction:column; gap:36px">
-        <h1 class="mega">How does an artwork become data?</h1>
-        <p class="lede">And what do the numbers leave out?</p>
+        <h1 class="mega">Art Data &amp;<br>Data Art</h1>
+        <p class="lede">Reading art with data · Making art from data</p>
       </div>
       <figure class="cover-fig">
         <canvas id="coverCanvas" width="1640" height="1100" aria-label="Seurat's painting turning into dots, pixels and numbers"></canvas>
         <figcaption class="label">Georges Seurat, <i>A Sunday on La Grande Jatte — 1884</i>, 1884–86. Art Institute of Chicago, 1926.224. Public domain.</figcaption>
       </figure>
     </div>
-    <div class="foot"><span class="edit" contenteditable="plaintext-only" data-edit="date" spellcheck="false">[Date]</span><span><span class="edit" contenteditable="plaintext-only" data-edit="ta" spellcheck="false">[TA name]</span> with Kerem Ozan Bayraktar</span></div>
-    <aside class="notes">Seurat built this painting from dots; a computer reads it as dots too, but as numbers. Today is about that translation and what it loses.</aside>
+    <div class="foot"><span class="edit" contenteditable="plaintext-only" data-edit="date" spellcheck="false">20 October 2026 · SUSAM G010</span><span><span class="edit" contenteditable="plaintext-only" data-edit="ta" spellcheck="false">Furkan Çağlar</span></span></div>
+    <aside class="notes">Seurat built this painting from dots; a computer reads it as dots too, but as RGB numbers. Today is about how we read art with data, how artists make work from data, and what the numbers leave out.</aside>
   </section>
 
   <!-- 2 · The hour -->
@@ -400,13 +406,13 @@
     <h2 class="title">Four parts, one hour.</h2>
     <div class="spacer"></div>
     <div class="hour">
-      <div style="width:21.7%"><span class="min">13<small>min</small></span><h3>Data, visualization, tools</h3><p>What data is, what a chart does, who makes data art, and with what</p></div>
-      <div style="width:25%"><span class="min">15<small>min</small></span><h3>Art data</h3><p>Questions, sources, cleaning, images as numbers, how the eye reads</p></div>
-      <div style="width:36.6%"><span class="min">22<small>min</small></span><h3>Live exercise, two rounds</h3><p>You rate one painting, hear its context, rate it again; we compare you with a machine; discussion with Kerem</p></div>
-      <div style="width:16.7%"><span class="min">10<small>min</small></span><h3>Midterm</h3><p>Brief, the 150-word paragraph, forms for SUSAM</p></div>
+      <div style="width:21.7%"><span class="min">13<small>min</small></span><h3>Data, visualization, tools</h3><p>What data is, how charts work, who makes data art, and with what</p></div>
+      <div style="width:25%"><span class="min">15<small>min</small></span><h3>Art data</h3><p>Questions, open museum tables, cleaning messy dates, images as numbers</p></div>
+      <div style="width:36.6%"><span class="min">22<small>min</small></span><h3>Live painting exercise</h3><p>Rate one painting on your phone, hear its context, rate it again, and build a live concept network</p></div>
+      <div style="width:16.7%"><span class="min">10<small>min</small></span><h3>Examples &amp; SUSAM</h3><p>Works from my own practice, four formats for SUSAM, and starter kit</p></div>
     </div>
     <div class="spacer"></div>
-    <aside class="notes">The bar widths are the minutes, so this slide is already a chart. Phones out only for part three.</aside>
+    <aside class="notes">The bar widths match the minutes. Keep phones ready for part three where we rate a painting together and map our own words.</aside>
   </section>
 
   <!-- 3 · What is data -->
@@ -430,17 +436,17 @@
           <tr><td>Georges Seurat</td><td>1859–1891</td><td>A Sunday on La Grande Jatte — 1884</td><td>1884–86</td><td>Oil on canvas</td><td>207.5 × 308.1</td><td>1926.224</td></tr>
         </table>
         <div class="leftout" data-step="2">
-          <h3>What the row cannot hold</h3>
+          <h3>What the table leaves out</h3>
           <ul>
-            <li>standing in front of it, three metres wide</li>
-            <li>two years of placing dots, and the border added later</li>
-            <li>who the people on the island were</li>
+            <li>Standing in front of it in the room (it is over three metres wide)</li>
+            <li>Two years of placing tiny dots by hand, plus the dotted frame Seurat painted later</li>
+            <li>Who the people on the island are, and why nobody is talking to anyone</li>
           </ul>
         </div>
       </div>
     </div>
-    <p class="src">Label: Art Institute of Chicago collection record, via its public API.</p>
-    <aside class="notes">Read the label, then press next: the same facts become a row. Johanna Drucker suggests calling data “capta”, what is taken, and the third step is what the taking leaves behind.</aside>
+    <p class="src">Label: Art Institute of Chicago collection record, via its public API (1926.224).</p>
+    <aside class="notes">Read the wall label, then press right arrow: those same lines become columns in a database, and the third step shows what gets left behind.</aside>
   </section>
 
   <!-- 4 · What is visualization -->
@@ -464,7 +470,7 @@
       </div>
     </div>
     <p class="src">Data: MoMA Collection (GitHub, CC0), 160,700 records; first listed artist with a recorded gender. 2020s = 2020–2026.</p>
-    <aside class="notes">Same ten numbers, five encodings; click through and ask which one lets you compare 1960 with 1990. Keep the dip in the 1960s in mind, we come back to it.</aside>
+    <aside class="notes">Click through the five buttons: bars and dots let you compare 1960 and 1990 immediately, while circles and color strips make you guess.</aside>
   </section>
 
   <!-- 5 · Basic forms -->
@@ -479,7 +485,7 @@
       <div class="form"><svg class="draw" viewBox="0 0 170 130"><line x1="30" y1="30" x2="90" y2="60"/><line x1="90" y1="60" x2="145" y2="25"/><line x1="90" y1="60" x2="60" y2="110"/><line x1="90" y1="60" x2="140" y2="105"/><line x1="30" y1="30" x2="60" y2="110"/><circle cx="30" cy="30" r="9"/><circle cx="90" cy="60" r="12"/><circle cx="145" cy="25" r="8"/><circle cx="60" cy="110" r="9"/><circle cx="140" cy="105" r="8"/></svg><div><h3>Network</h3><p class="use">who is connected to whom</p><p class="ex">Alfred H. Barr Jr., 1936; Mark Lombardi, 1990s</p></div></div>
       <div class="form"><svg class="draw" viewBox="0 0 170 130"><line x1="85" y1="120" x2="85" y2="70"/><line x1="85" y1="70" x2="40" y2="40"/><line x1="85" y1="70" x2="130" y2="40"/><line x1="40" y1="40" x2="20" y2="12"/><line x1="40" y1="40" x2="58" y2="12"/><line x1="130" y1="40" x2="112" y2="12"/><line x1="130" y1="40" x2="150" y2="12"/></svg><div><h3>Tree</h3><p class="use">order knowledge into branches</p><p class="ex">Diderot and d’Alembert, Encyclopédie, 1751</p></div></div>
     </div>
-    <aside class="notes">These are the examples from Kerem’s file, sorted by the form they use. Any of these forms can carry your midterm.</aside>
+    <aside class="notes">All six were drawn on paper long before computers existed. Pick the structure that matches how your records relate to each other.</aside>
   </section>
 
   <!-- 6 · Data art -->
@@ -487,16 +493,16 @@
     <div class="meta"><span>1 · Data and visualization</span><span>Beyond the chart</span></div>
     <h2 class="title">When the chart becomes the work.</h2>
     <div class="artists">
-      <div class="artist"><h3>Federica Fragapane</h3><span class="work">The Stories Behind a Line, 2018</span><p>The routes of six asylum seekers to Italy, drawn as delicate lines with their own stories.</p></div>
-      <div class="artist"><h3>Giorgia Lupi &amp; Stefanie Posavec</h3><span class="work">Dear Data, 2014–15</span><p>A year of weekly hand-drawn postcards about their own small data, sent between New York and London.</p><a href="https://www.dear-data.com/" target="_blank" rel="noopener">dear-data.com ↗</a></div>
-      <div class="artist"><h3>Nadieh Bremer &amp; Shirley Wu</h3><span class="work">Data Sketches, from 2016</span><p>Monthly experiments in custom, hand-coded visualization; later a book with the process behind each one.</p><a href="https://www.datasketch.es/" target="_blank" rel="noopener">datasketch.es ↗</a></div>
-      <div class="artist"><h3>Lev Manovich, Moritz Stefaner et al.</h3><span class="work">Selfiecity, 2014</span><p>3,200 Instagram selfies from five cities, sorted and plotted by pose, mood and face.</p><a href="https://selfiecity.net/" target="_blank" rel="noopener">selfiecity.net ↗</a></div>
-      <div class="artist"><h3>Aaron Koblin</h3><span class="work">The Sheep Market, 2006</span><p>10,000 sheep drawn by Amazon Mechanical Turk workers, each paid $0.02 to “draw a sheep facing to the left”.</p><a href="http://www.thesheepmarket.com/" target="_blank" rel="noopener">thesheepmarket.com ↗</a></div>
-      <div class="artist"><h3>Refik Anadol</h3><span class="work">Unsupervised, MoMA, 2022–23</span><p>A machine learning model trained on MoMA’s collection data, shown as a moving image in the museum’s lobby.</p><a href="https://refikanadol.com/works/unsupervised/" target="_blank" rel="noopener">refikanadol.com ↗</a></div>
-      <div class="artist"><h3>Nathalie Miebach</h3><span class="work">Weather sculptures</span><p>Storm and weather data translated into hand-built sculptural objects.</p><a href="https://www.nathaliemiebach.com/" target="_blank" rel="noopener">nathaliemiebach.com ↗</a></div>
-      <div class="artist"><h3>Burak Arıkan</h3><span class="work">Networks of Dispossession, 2013</span><p>Maps of capital and power in Istanbul, made collectively on Graph Commons for the 13th Istanbul Biennial.</p><a href="https://graphcommons.com/" target="_blank" rel="noopener">graphcommons.com ↗</a></div>
+      <div class="artist"><h3>Federica Fragapane</h3><span class="work">The Stories Behind a Line, 2018</span><p>The routes of six asylum seekers to Italy, drawn day by day with their own stories.</p></div>
+      <div class="artist"><h3>Giorgia Lupi &amp; Stefanie Posavec</h3><span class="work">Dear Data, 2014–15</span><p>A year of weekly hand-drawn postcards about everyday habits, sent between New York and London.</p><a href="https://www.dear-data.com/" target="_blank" rel="noopener">dear-data.com ↗</a></div>
+      <div class="artist"><h3>Nadieh Bremer &amp; Shirley Wu</h3><span class="work">Data Sketches, from 2016</span><p>Twelve custom web visualizations, published together with all the messy sketches and code behind them.</p><a href="https://www.datasketch.es/" target="_blank" rel="noopener">datasketch.es ↗</a></div>
+      <div class="artist"><h3>Lev Manovich, Moritz Stefaner et al.</h3><span class="work">Selfiecity, 2014</span><p>3,200 Instagram selfies from five cities, sorted by head tilt, mood, and demographics.</p><a href="https://selfiecity.net/" target="_blank" rel="noopener">selfiecity.net ↗</a></div>
+      <div class="artist"><h3>Aaron Koblin</h3><span class="work">The Sheep Market, 2006</span><p>10,000 sheep drawn by Mechanical Turk workers, each paid $0.02 to “draw a sheep facing to the left.”</p><a href="http://www.thesheepmarket.com/" target="_blank" rel="noopener">thesheepmarket.com ↗</a></div>
+      <div class="artist"><h3>Refik Anadol</h3><span class="work">Unsupervised, MoMA, 2022–23</span><p>A machine learning model trained on MoMA’s public collection archive, shown in the museum lobby.</p><a href="https://refikanadol.com/works/unsupervised/" target="_blank" rel="noopener">refikanadol.com ↗</a></div>
+      <div class="artist"><h3>Nathalie Miebach</h3><span class="work">Weather sculptures</span><p>Storm and weather readings translated into woven reed baskets and musical scores.</p><a href="https://www.nathaliemiebach.com/" target="_blank" rel="noopener">nathaliemiebach.com ↗</a></div>
+      <div class="artist"><h3>Burak Arıkan</h3><span class="work">Networks of Dispossession, 2013</span><p>Maps of capital, urban projects, and state contracts in Turkey, built collectively on Graph Commons.</p><a href="https://graphcommons.com/" target="_blank" rel="noopener">graphcommons.com ↗</a></div>
     </div>
-    <aside class="notes">Open one or two of these live; Selfiecity and The Sheep Market load fast. Notice the range: hand drawing, code, crowdsourced labor, machine learning, objects.</aside>
+    <aside class="notes">Notice how varied the materials are: postcards drawn with pen, woven baskets, crowdsourced drawings, network maps, and neural networks.</aside>
   </section>
 
   <!-- 7 · Tools map -->
@@ -517,30 +523,41 @@
       <div class="chartbox"><svg id="toolSvg" width="1180" height="560" viewBox="0 0 1180 560" role="img" aria-label="Map of data visualization tools by how much code they need and how custom their forms are"></svg></div>
       <aside class="toolcard" id="toolCard" aria-live="polite"></aside>
     </div>
-    <p class="src">Positions are a rough judgment from practice, not measured data. Click a tool.</p>
-    <aside class="notes">Left is no code, right is a lot; bottom is standard charts, top is custom forms. Filter by the SUSAM format you have in mind, and notice that pencil and paper sit in the top left.</aside>
+    <p class="src">Horizontal axis: how much code you write. Vertical axis: how freely you can shape the visual form. Click any dot.</p>
+    <aside class="notes">Left is no code, right is heavy code; bottom is standard charts, top is custom visual forms. Pencil and paper sit at the top left—zero code, complete freedom.</aside>
   </section>
 
-  <!-- 8 · Chart to artwork -->
+  <!-- 8 · Live p5.js (Interactive editable code + real MoMA data across 4 visual modes) -->
   <section class="slide" data-part="1 · Data and visualization" data-hook="bloom">
-    <div class="meta"><span>1 · Data and visualization</span><span>p5.js, live</span></div>
+    <div class="meta"><span>1 · Data and visualization</span><span>p5.js · Live editable code</span></div>
     <h2 class="title">From chart to artwork.</h2>
     <div class="bloomgrid">
-      <div class="codebox"><p class="label">This code is running on the right (p5.js)</p><pre id="bloomCode"></pre></div>
-      <div style="display:flex; flex-direction:column; gap:18px; min-width:0">
-        <div class="toolbar-row">
-          <div class="seg" id="bloomSeg"><button type="button" data-m="chart" aria-pressed="false">Chart</button><button type="button" data-m="art" aria-pressed="true">Artwork</button></div>
-          <label class="label" for="hand" style="display:flex; gap:14px; align-items:center; flex:1">hand <input id="hand" type="range" min="0" max="1" step="0.05" value="0.35" style="max-width:320px"></label>
+      <div class="codebox">
+        <div class="codebox-head">
+          <span class="label" id="bloomStatus">Edit any number or color below — updates live</span>
+          <button type="button" class="chip" id="bloomReset" style="padding:6px 12px; font-size:15px">Reset code</button>
         </div>
-        <div id="bloomHost" class="bloomhost"></div>
-        <p class="label" id="bloomCap">Each bloom is a decade of MoMA acquisitions. Size: works acquired. 100 strokes = 100%. Blue strokes: share by women.</p>
+        <textarea id="bloomCode" spellcheck="false" aria-label="Live editable p5.js parameters and drawing rules"></textarea>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:14px; min-width:0">
+        <div class="toolbar-row">
+          <div class="seg" id="bloomSeg">
+            <button type="button" data-m="chart" aria-pressed="false">Bar Chart</button>
+            <button type="button" data-m="rings" aria-pressed="true">1 · Isolines</button>
+            <button type="button" data-m="bars" aria-pressed="false">2 · Spectrum</button>
+            <button type="button" data-m="poly" aria-pressed="false">3 · Manifold</button>
+          </div>
+          <label class="label" for="hand" style="display:flex; gap:12px; align-items:center; flex:1">distortion <input id="hand" type="range" min="0" max="1" step="0.05" value="0.25" style="max-width:220px"></label>
+        </div>
+        <div id="bloomHost" class="bloomhost"><div class="tip" id="bloomTip" hidden></div></div>
+        <p class="label" id="bloomCap">1 · Isolines (İzohips): Outer ring size = total works acquired in that decade. Each blue contour ring = 5% share by women. Hover any decade for exact counts.</p>
       </div>
     </div>
-    <p class="src">Data: MoMA Collection (GitHub, CC0). The 1960s bloom is huge because of the Mies van der Rohe Archive.</p>
-    <aside class="notes">Same numbers as the bar chart a few slides ago; switch Chart and Artwork back and forth. The artwork is less precise and more memorable, and that trade-off is your choice to make.</aside>
+    <p class="src">Data: MoMA Collection (GitHub, CC0), 1930s–2020s. The 1960s total (44,796 works) jumps because the Mies van der Rohe Archive arrived at once.</p>
+    <aside class="notes">Hover over any decade on the canvas to inspect the exact numbers. On the left, change scale, pctPerRing, wobble, or colors live on stage to see how code reshapes the same dataset.</aside>
   </section>
 
-  <!-- 7 · Question first -->
+  <!-- 9 · Question first -->
   <section class="slide" data-part="2 · Art data">
     <div class="meta"><span>2 · Art data</span><span>Start here</span></div>
     <h2 class="title">Start with a question you cannot answer yet.</h2>
@@ -551,48 +568,51 @@
       <li data-step="2"><span class="q">Which museums are visible in the open data that trains AI?</span><span class="d">data: Wikidata</span></li>
       <li data-step="2"><span class="q">How do different museums label the same artist?</span><span class="d">data: wall labels you photograph</span></li>
     </ul>
-    <aside class="notes">A good question names what you would count or compare. The first one is the one we will answer together in twenty minutes.</aside>
+    <aside class="notes">A workable question names what you will actually count or compare. We will test the first question together in a few minutes.</aside>
   </section>
 
-  <!-- 8 · What is art data -->
+  <!-- 10 · What is art data -->
   <section class="slide" data-part="2 · Art data">
     <div class="meta"><span>2 · Art data</span><span>What is art data?</span></div>
     <h2 class="title">Art data is more than metadata.</h2>
-    <div class="layers">
-      <svg class="links" viewBox="0 0 1664 640" preserveAspectRatio="none" aria-hidden="true">
-        <line x1="640" y1="230" x2="420" y2="70"/><line x1="640" y1="330" x2="420" y2="300"/><line x1="640" y1="400" x2="420" y2="530"/>
-        <line x1="1024" y1="230" x2="1240" y2="70"/><line x1="1024" y1="330" x2="1240" y2="300"/><line x1="1024" y1="400" x2="1240" y2="530"/>
-      </svg>
-      <div class="core"><img src="img/seurat.jpg" alt="Seurat, A Sunday on La Grande Jatte"></div>
-      <div class="ly" style="left:0; top:20px" data-step="1"><h3>Metadata</h3><p>who, when, where, what it is made of</p></div>
-      <div class="ly" style="left:0; top:250px" data-step="1"><h3>Pixels</h3><p>color, light, edges of a photograph of the work</p></div>
-      <div class="ly" style="left:0; top:480px" data-step="1"><h3>Text</h3><p>wall labels, reviews, catalogues, interviews</p></div>
-      <div class="ly" style="left:1244px; top:20px" data-step="2"><h3>People</h3><p>artists, dealers, collectors, curators and their networks</p></div>
-      <div class="ly" style="left:1244px; top:250px" data-step="2"><h3>Market</h3><p>sales, prices, auction records</p></div>
-      <div class="ly" style="left:1244px; top:480px" data-step="2"><h3>Audience</h3><p>visits, reactions, your own survey</p></div>
+    <div class="layers-grid">
+      <div class="layer-col left" data-step="1">
+        <div class="layer-card"><h3>Metadata</h3><p>who made it, when, medium, dimensions, when the museum bought it</p></div>
+        <div class="layer-card"><h3>Pixels</h3><p>color palette, brightness, and edges measured from a photo of the work</p></div>
+        <div class="layer-card"><h3>Text</h3><p>wall labels, exhibition catalogues, press reviews, artist interviews</p></div>
+      </div>
+      <div class="layers-center">
+        <img src="img/seurat.jpg" alt="Seurat, A Sunday on La Grande Jatte">
+        <span>Georges Seurat, <i>A Sunday on La Grande Jatte — 1884</i></span>
+      </div>
+      <div class="layer-col right" data-step="2">
+        <div class="layer-card"><h3>People &amp; networks</h3><p>artists, curators, galleries, collectors, and who exhibits with whom</p></div>
+        <div class="layer-card"><h3>Market &amp; provenance</h3><p>who owned the work, auction prices, public or private funding</p></div>
+        <div class="layer-card"><h3>Audience</h3><p>how long visitors look, where they stand, or our own classroom survey</p></div>
+      </div>
     </div>
-    <div class="becomes" data-step="3"><span>It can become</span><span class="c">a chart</span><span class="c">a map</span><span class="c">a network</span><span class="c">an image plot</span><span class="c">an object</span><span class="c">a drawing</span><span class="c">a sound</span></div>
-    <aside class="notes">Most datasets you find are the left column; the right column is usually something you collect yourself. Pick the layer that fits your question.</aside>
+    <div class="becomes" data-step="3"><span>It can become:</span><span class="c">a chart</span><span class="c">a map</span><span class="c">a network</span><span class="c">an image plot</span><span class="c">an object</span><span class="c">a drawing</span><span class="c">a sound</span></div>
+    <aside class="notes">Left column: data taken directly from the object or its catalogue record. Right column: how the work moves through people, money, and viewers.</aside>
   </section>
 
-  <!-- 9 · Where to find it -->
+  <!-- 11 · Where to find it -->
   <section class="slide" data-part="2 · Art data">
     <div class="meta"><span>2 · Art data</span><span>Sources</span></div>
     <h2 class="title">Where to find art data.</h2>
     <table class="srcs">
       <tr><th>Source</th><th>What you get</th><th>Watch out</th></tr>
-      <tr><td>MoMA collection<small>github.com/MuseumofModernArt</small></td><td>160,700 works as CSV: artist, nationality, gender, dates, acquisition year</td><td>MoMA says much of it is “not curatorially approved”. One archive is 10% of all rows.</td></tr>
-      <tr><td>Met Open Access<small>CSV on GitHub + Collection API</small></td><td>Objects with culture, period, tags; public-domain images</td><td>A very large file; “culture” and “period” mix very different kinds of category.</td></tr>
-      <tr><td>Art Institute of Chicago<small>api.artic.edu</small></td><td>About 133,000 works, styles, dominant colors, IIIF images</td><td>Style labels are inconsistent: “19th century” and “nineteenth century” both exist.</td></tr>
-      <tr><td>Rijksmuseum<small>data.rijksmuseum.nl</small></td><td>Collection data and images through its data services</td><td>Read the current access rules and licenses before you build on it.</td></tr>
-      <tr><td>Wikidata<small>query.wikidata.org</small></td><td>Artists, works, places and movements linked together; download as CSV</td><td>Written by volunteers; coverage is very uneven between museums.</td></tr>
-      <tr><td>Your own survey<small>Google Forms, a notebook</small></td><td>Exactly the question you want to ask</td><td>Small and shaped by who answers. Do not collect names you do not need.</td></tr>
+      <tr><td>MoMA collection<small>github.com/MuseumofModernArt</small></td><td>160,700 works as CSV: artist, nationality, gender, dates, acquisition year</td><td>Marked “not curatorially approved.” One single archive makes up 10% of all rows.</td></tr>
+      <tr><td>Met Open Access<small>CSV on GitHub + Collection API</small></td><td>480,000+ objects with culture, period, medium, and public-domain images</td><td>“Culture” and “period” mix geographic, ethnic, and dynastic labels.</td></tr>
+      <tr><td>Art Institute of Chicago<small>api.artic.edu</small></td><td>133,000 works with styles, dominant colors, and IIIF image links</td><td>Style labels are inconsistent (“19th century” vs. “nineteenth century”).</td></tr>
+      <tr><td>Rijksmuseum<small>data.rijksmuseum.nl</small></td><td>High-resolution images and detailed iconographic tags</td><td>Check current API access rules and image licenses before batch downloading.</td></tr>
+      <tr><td>Wikidata<small>query.wikidata.org</small></td><td>Artists, works, places, and movements linked together; exports as CSV</td><td>Written by volunteers; big Western museums have tens of thousands of rows, local ones have dozens.</td></tr>
+      <tr><td>Your own survey<small>forms, field notes, counting</small></td><td>Built directly around the question you want to ask</td><td>Smaller sample size, shaped by who answers—do not collect personal names you do not need.</td></tr>
     </table>
     <p class="keep" data-step="1">Every collection is a record of what someone chose to keep.</p>
-    <aside class="notes">All of these are free; the first four are museums describing themselves. The last row is the most underrated source for a midterm.</aside>
+    <aside class="notes">Before plotting any museum CSV, ask how that museum collected its works and which single gift or archive dominates the row count.</aside>
   </section>
 
-  <!-- 10 · Evidence -->
+  <!-- 12 · Evidence -->
   <section class="slide" data-part="2 · Art data" data-hook="evidence">
     <div class="meta"><span>2 · Art data</span><span>Who is in the data</span></div>
     <h2 class="title">Who is in the data decides what the chart can say.</h2>
@@ -612,45 +632,45 @@
         </div>
       </div>
     </div>
-    <p class="src">Wikidata query, 26 September 2026 (collection or location; 5 of the Istanbul museum’s 8 records are works). Tate Collection data (CC0), 69,201 records, 39,389 by Turner.</p>
-    <aside class="notes">On a linear scale the Istanbul museums disappear; switch to log and they appear, which is also a choice. A model trained on this kind of data has never seen them.</aside>
+    <p class="src">Wikidata query, 26 September 2026. Tate Collection data (CC0), 69,201 records, 39,389 by Turner.</p>
+    <aside class="notes">On a linear scale the four Istanbul museums barely register; switch to log scale to see them. And in the Tate CSV, more than half of all rows are Turner's sketchbooks.</aside>
   </section>
 
-  <!-- 11 · Cleaning -->
+  <!-- 13 · Cleaning -->
   <section class="slide" data-part="2 · Art data" data-hook="clean">
     <div class="meta"><span>2 · Art data</span><span>Cleaning</span></div>
     <span data-step="1" hidden></span>
     <h2 class="title">Metadata is an interpretation.</h2>
     <div class="clean">
-      <div style="display:flex; flex-direction:column; gap:30px">
-        <p class="label">Real “Date” values from a random sample of 3,000 MoMA records → a rule that keeps the first year</p>
+      <div style="display:flex; flex-direction:column; gap:28px">
+        <p class="label">Real “Date” values from 3,000 MoMA records → a rule that keeps the first 4-digit year</p>
         <ul class="rawlist" id="rawlist">
-          <li><span>(c. 1915)</span><span class="arrow">→</span><span class="yr">1915</span><span class="rule">circa</span></li>
-          <li><span>early 1930s</span><span class="arrow">→</span><span class="yr">1930</span><span class="rule flag">a decade, not a year</span></li>
+          <li><span>(c. 1915)</span><span class="arrow">→</span><span class="yr">1915</span><span class="rule">circa dropped</span></li>
+          <li><span>early 1930s</span><span class="arrow">→</span><span class="yr">1930</span><span class="rule flag">a decade, not a single year</span></li>
           <li><span>1884-86</span><span class="arrow">→</span><span class="yr">1884</span><span class="rule">range, hyphen</span></li>
           <li><span>1962–66</span><span class="arrow">→</span><span class="yr">1962</span><span class="rule">range, en dash</span></li>
           <li><span>1953—1956</span><span class="arrow">→</span><span class="yr">1953</span><span class="rule">range, em dash</span></li>
-          <li><span>1971 (printed 2014)</span><span class="arrow">→</span><span class="yr">1971</span><span class="rule">made vs printed</span></li>
-          <li><span>Published 1926 (frottage 1925)</span><span class="arrow">→</span><span class="yr">1926</span><span class="rule flag">rule picks publication</span></li>
+          <li><span>1971 (printed 2014)</span><span class="arrow">→</span><span class="yr">1971</span><span class="rule">negative vs. print date</span></li>
+          <li><span>Published 1926 (frottage 1925)</span><span class="arrow">→</span><span class="yr">1926</span><span class="rule flag">rule picks publication year</span></li>
           <li><span>Before 1899</span><span class="arrow">→</span><span class="yr">1899</span><span class="rule flag">only an upper limit</span></li>
-          <li><span>n.d.</span><span class="arrow">→</span><span class="yr">—</span><span class="rule flag">no date</span></li>
+          <li><span>n.d.</span><span class="arrow">→</span><span class="yr">—</span><span class="rule flag">no date, dropped</span></li>
         </ul>
         <div class="counts" data-step="2">
           <div><b>633</b><span>of 3,000 dates are not a plain year</span></div>
           <div><b>3</b><span>different dash characters</span></div>
-          <div><b>46</b><span>“Unidentified photographer”, plus 9 “Unknown artist”</span></div>
+          <div><b>55</b><span>listed as “Unidentified” or “Unknown”</span></div>
         </div>
       </div>
       <div class="rules" data-step="3">
         <div><h3>Keep the raw column.</h3><p>Never overwrite what the museum wrote.</p></div>
-        <div><h3>Log every decision.</h3><p>“First year in the text” is a rule you chose, write it down.</p></div>
-        <div><h3>Count what you drop.</h3><p>The rows you cannot use are part of the result.</p></div>
+        <div><h3>Write down your rule.</h3><p>“First year in the text” is a choice you made; explain it.</p></div>
+        <div><h3>Count what you drop.</h3><p>The rows you leave out are part of the result.</p></div>
       </div>
     </div>
-    <aside class="notes">First press shows what a simple rule does to each value; look at the orange ones, where the rule quietly changes the meaning. Then the three habits.</aside>
+    <aside class="notes">Press right arrow to apply a simple rule to real MoMA date strings. Look at the orange labels where the rule quietly changes what the record meant.</aside>
   </section>
 
-  <!-- 12 · Image to numbers -->
+  <!-- 14 · Image to numbers -->
   <section class="slide" data-part="2 · Art data" data-hook="analysis">
     <div class="meta"><span>2 · Art data</span><span>Images as numbers</span></div>
     <h2 class="title">Same image, three methods, different numbers.</h2>
@@ -682,10 +702,10 @@
         </div>
       </div>
     </div>
-    <aside class="notes">Average color says this painting is a muddy green; the palette says orange, blue and green; neither is wrong. Move the threshold and the “amount of structure” changes with a single choice.</aside>
+    <aside class="notes">Average RGB turns a pointillist painting into a dull olive-green—the exact thing Seurat tried to avoid by placing pure dots side by side. And moving the threshold slider changes how many edges exist.</aside>
   </section>
 
-  <!-- 13 · Cleveland & McGill -->
+  <!-- 15 · Cleveland & McGill -->
   <section class="slide" data-part="2 · Art data" data-hook="cm">
     <div class="meta"><span>2 · Art data</span><span>How the eye reads</span></div>
     <h2 class="title">A chart is a claim.</h2>
@@ -695,13 +715,13 @@
       <p class="reveal" data-step="1" id="cmReveal">B = –% of A</p>
       <button type="button" class="chip" id="cmNew">New pair</button>
     </div>
-    <p class="src">Ranking from William S. Cleveland and Robert McGill, “Graphical Perception”, Journal of the American Statistical Association, 1984.</p>
-    <aside class="notes">Ask the room to shout a number for each panel, then reveal. Cleveland and McGill found people judge position most accurately and color least, so put your main comparison on position.</aside>
+    <p class="src">Ranking from William S. Cleveland and Robert McGill, “Graphical Perception,” Journal of the American Statistical Association (1984).</p>
+    <aside class="notes">Ask the room to guess the percentage from right to left (color, area, angle, length, position), then press right arrow to reveal the exact answer.</aside>
   </section>
 
-  <!-- 14 · Live exercise -->
+  <!-- 16 · Live exercise -->
   <section class="slide dark" data-part="3 · Live exercise" data-hook="exercise" data-phase="r1">
-    <div class="meta"><span>3 · Live exercise</span><span>Your turn</span></div>
+    <div class="meta"><span>3 · Live exercise</span><span>Round 1</span></div>
     <h2 class="title">Rate one painting.</h2>
     <div class="ex-grid">
       <div style="display:flex; flex-direction:column; gap:16px">
@@ -710,7 +730,7 @@
           <div class="ph-text" id="exPh">[Artwork for the live exercise]<br>Drop the image here, or <label for="exFile" style="border-bottom:2px solid currentColor; cursor:pointer">choose a file</label></div>
           <input id="exFile" type="file" accept="image/*" style="position:absolute; width:1px; height:1px; opacity:0">
         </div>
-        <p class="label"><span class="edit" contenteditable="plaintext-only" data-edit="tomb" spellcheck="false">[Artist, Title, Date. Collection. Credit]</span></p>
+        <p class="label"><span class="edit" contenteditable="plaintext-only" data-edit="tomb" spellcheck="false">Georges Seurat, A Sunday on La Grande Jatte — 1884 (or drop any painting)</span></p>
       </div>
       <div style="display:flex; flex-direction:column; gap:36px">
         <div style="display:flex; gap:32px; align-items:end">
@@ -718,7 +738,7 @@
           <div style="display:flex; flex-direction:column; gap:12px">
             <p class="label">or open</p>
             <p style="font: 500 34px var(--mono)"><span class="edit ph" contenteditable="plaintext-only" data-edit="link" spellcheck="false">[short link]</span></p>
-            <p class="label">No names. Two minutes.</p>
+            <p class="label">No names. Ninety seconds.</p>
           </div>
         </div>
         <div class="sliders" aria-label="The four sliders on your phone">
@@ -729,33 +749,33 @@
         </div>
       </div>
     </div>
-    <aside class="notes">Scan, look at the painting for thirty seconds, then move four sliders; nobody sees who answered what. While they rate, the next slide computes the machine’s answer from the same image.</aside>
+    <aside class="notes">Scan the QR code, look at the painting for thirty seconds, and set the four sliders. While everyone votes, the browser also calculates a pixel formula on the same four axes.</aside>
   </section>
 
-  <!-- 15 · Results -->
-  <section class="slide dark" data-part="3 · Live exercise" data-hook="results">
-    <div class="meta"><span>3 · Live exercise</span><span>Class vs. machine</span></div>
+  <!-- 17 · Results -->
+  <section class="slide dark" data-part="3 · Live exercise" data-hook="results" data-phase="r1">
+    <div class="meta"><span>3 · Live exercise</span><span>Class vs. pixel formula</span></div>
     <h2 class="title" style="max-width:1060px">The gap is not an error. It is the discussion.</h2>
     <div class="raw" aria-label="Raw rows as they arrive"></div>
-    <div class="legend"><span><i style="background:var(--ikb-d)"></i>Class (live)</span><span><i style="background:var(--machine-d); transform:rotate(45deg) scale(.8)"></i>Machine estimate</span><span class="label" id="resNote"></span></div>
+    <div class="legend"><span><i style="background:var(--ikb-d)"></i>Class (live)</span><span><i style="background:var(--machine-d); transform:rotate(45deg) scale(.8)"></i>Pixel formula</span><span class="label" id="resNote"></span></div>
     <div class="res" id="res"></div>
-    <aside class="notes">The diamond is computed from pixels only; the tags mark the axis where we disagree most with each other (largest standard deviation) and the one furthest from the machine. Top right is the raw table as it arrives: this is the data before it is drawn, same as the cleaning slide.</aside>
+    <aside class="notes">The orange diamond is calculated from pixels alone. Look at which axis splits the room the most, and where our eyes diverge from the pixel formula.</aside>
   </section>
 
   <!-- 18 · Context -->
   <section class="slide" data-part="3 · Live exercise">
-    <div class="meta"><span>3 · Live exercise</span><span>With Kerem</span></div>
+    <div class="meta"><span>3 · Live exercise</span><span>Context</span></div>
     <h2 class="title">Now, the context.</h2>
     <div class="ctx">
-      <figure class="ctxfig"><img id="ctxImg" alt="Exercise artwork" hidden><div class="ctx-ph" id="ctxPh">[Exercise artwork]</div><figcaption class="label"><span class="edit" contenteditable="plaintext-only" data-edit="tomb" spellcheck="false">[Artist, Title, Date. Collection. Credit]</span></figcaption></figure>
+      <figure class="ctxfig"><img id="ctxImg" alt="Exercise artwork" hidden><div class="ctx-ph" id="ctxPh">[Exercise artwork]</div><figcaption class="label"><span class="edit" contenteditable="plaintext-only" data-edit="tomb" spellcheck="false">Georges Seurat, A Sunday on La Grande Jatte — 1884</span></figcaption></figure>
       <ul class="ctxlist">
-        <li><span class="label">who made it, and how</span><span class="edit ph" contenteditable="plaintext-only" data-edit="ctx1" spellcheck="false">[Kerem]</span></li>
-        <li><span class="label">when, where, for whom</span><span class="edit ph" contenteditable="plaintext-only" data-edit="ctx2" spellcheck="false">[Kerem]</span></li>
-        <li><span class="label">what happened to it</span><span class="edit ph" contenteditable="plaintext-only" data-edit="ctx3" spellcheck="false">[Kerem]</span></li>
-        <li><span class="label">what the image alone does not show</span><span class="edit ph" contenteditable="plaintext-only" data-edit="ctx4" spellcheck="false">[Kerem]</span></li>
+        <li><span class="label">who made it, and how</span><span class="edit" contenteditable="plaintext-only" data-edit="ctx1" spellcheck="false">Two years of studio work after 60+ sketches; Seurat placed pure color dots side by side to mix in the viewer’s eye, then added a painted dot border in 1888–89.</span></li>
+        <li><span class="label">when, where, for whom</span><span class="edit" contenteditable="plaintext-only" data-edit="ctx2" spellcheck="false">An island on the Seine outside Paris: bourgeois Sunday strollers share the bank with working-class rowers; the pet monkey on a leash was a well-known Parisian satire trope.</span></li>
+        <li><span class="label">posture &amp; stillness</span><span class="edit" contenteditable="plaintext-only" data-edit="ctx3" spellcheck="false">Almost every figure stands in strict profile or frontal pose like an ancient frieze—crowded together, yet nobody speaks to or looks at anyone else.</span></li>
+        <li><span class="label">what happened to the paint</span><span class="edit" contenteditable="plaintext-only" data-edit="ctx4" spellcheck="false">Seurat’s unstable zinc yellow dots darkened to brown within a few years, shifting the warmth and light balance we see today.</span></li>
       </ul>
     </div>
-    <aside class="notes">Kerem gives three minutes of context about the work: the artist, the period, the story. Then everyone rates it again with the same link.</aside>
+    <aside class="notes">Once we talk through the social tension, the frozen frieze-like postures, and the darkened yellow pigment, let's see if anyone's rating of calm/tense or ordered/chaotic changes.</aside>
   </section>
 
   <!-- 19 · Round 2 -->
@@ -766,7 +786,7 @@
       <div style="display:flex; gap:32px; align-items:end">
         <div class="qrbox" data-qr>[QR code]</div>
         <div style="display:flex; flex-direction:column; gap:12px">
-          <p class="label">same link</p>
+          <p class="label">same page on your phone</p>
           <p style="font: 500 34px var(--mono)"><span class="edit ph" contenteditable="plaintext-only" data-edit="link" spellcheck="false">[short link]</span></p>
           <p class="label">Same four sliders. Has anything moved?</p>
         </div>
@@ -778,46 +798,68 @@
         <div class="sl"><span>flat</span><span class="track"><i style="left:50%"></i></span><span>deep</span></div>
       </div>
     </div>
-    <aside class="notes">Same painting, same sliders, one minute. Nobody has to change anything; staying put is also an answer.</aside>
+    <aside class="notes">Same painting, same four sliders. Keeping the exact same numbers is just as valid an answer as moving them.</aside>
   </section>
 
   <!-- 20 · Shift -->
-  <section class="slide dark" data-part="3 · Live exercise" data-hook="shift">
+  <section class="slide dark" data-part="3 · Live exercise" data-hook="shift" data-phase="r2">
     <div class="meta"><span>3 · Live exercise</span><span>Round 1 → Round 2</span></div>
     <h2 class="title" style="max-width:1060px">Did context change what we saw?</h2>
     <div class="raw" aria-label="Raw rows as they arrive"></div>
-    <div class="legend"><span><i style="border:3px solid var(--ikb-d); box-sizing:border-box"></i>Round 1</span><span><i style="background:var(--ikb-d)"></i>Round 2</span><span><i style="background:var(--machine-d); transform:rotate(45deg) scale(.8)"></i>Machine, unchanged</span></div>
+    <div class="legend"><span><i style="border:3px solid var(--ikb-d); box-sizing:border-box; border-radius:50%"></i>Student R1 → R2</span><span><i style="background:#EEF0F2; width:28px; height:6px; vertical-align:3px"></i>Class average shift</span><span><i style="background:var(--machine-d); transform:rotate(45deg) scale(.8)"></i>Pixel formula, unchanged</span></div>
     <div class="res" id="shift"></div>
-    <aside class="notes">Arrows show how each person moved between rounds. The machine did not move at all: the pixels did not change, only what we know.</aside>
+    <aside class="notes">Top lanes show each student's movement; the bold white-and-blue bar shows how the class average moved between Round 1 and Round 2.</aside>
   </section>
 
-  <!-- 21 · Discussion -->
-  <section class="slide" data-part="3 · Live exercise" data-phase="words" data-hook="words">
-    <div class="meta"><span>3 · Live exercise</span><span>With Kerem</span></div>
-    <h2 class="title">Three questions.</h2>
-    <div class="disc">
-      <div><h3>Form</h3><p>Where did the class and the machine diverge, and why?</p></div>
-      <div><h3>Meaning</h3><p>What did no slider capture?</p><div class="wordwall" id="wordwall">[Live: one word each, “what no slider caught”]</div></div>
-      <div><h3>Context</h3><p>The artist, the labor, the period: what did we leave out?</p></div>
+  <!-- 21 · Interactive Concept Network (Kavram Ağı) -->
+  <section class="slide dark" data-part="3 · Live exercise" data-phase="words" data-hook="words">
+    <div class="meta"><span>3 · Live exercise</span><span>Interactive interpretation · Concept network</span></div>
+    <h2 class="title">What no slider caught: live concept network.</h2>
+    <div class="cnet-grid">
+      <div class="cnet-box">
+        <canvas id="conceptNetCv" width="1120" height="510" aria-label="Interactive force-directed concept network of student words and interpretations"></canvas>
+        <div class="cnet-bar">
+          <select id="cnetCat" aria-label="Concept category">
+            <option value="mood">Mood &amp; Atmosphere</option>
+            <option value="form">Form &amp; Color</option>
+            <option value="figure">Figures &amp; Space</option>
+            <option value="context">Social Context</option>
+          </select>
+          <input type="text" id="cnetInput" placeholder="Type a word/concept from class + Enter…" maxlength="32">
+          <button type="button" class="chip" id="cnetAdd">Add node</button>
+          <button type="button" class="chip" id="cnetSeed">Reload sample words</button>
+          <button type="button" class="chip" id="cnetClear">Clear</button>
+        </div>
+      </div>
+      <div class="cnet-side">
+        <div class="cnet-card">
+          <h3>How the network connects</h3>
+          <p>Phones send words in real time. Each word links to its category (<span style="color:#6A75FF">Form</span>, <span style="color:#E5602A">Mood</span>, <span style="color:#3DDC84">Figures</span>, <span style="color:#E0B07A">Context</span>), to other words from the same person, and to classmates who rated the sliders similarly. <b>Drag any node, or click two nodes to connect them.</b></p>
+        </div>
+        <div class="cnet-card" style="flex:1; display:flex; flex-direction:column; gap:10px">
+          <h3>Words from the room <small id="cnetCount" style="font:400 16px var(--mono); color:var(--night-mute); margin-left:8px">0 nodes</small></h3>
+          <div class="wordwall" id="wordwall" style="min-height:140px; max-height:165px; overflow:hidden; padding:12px">[Live: words sent from phones or typed below the graph]</div>
+        </div>
+      </div>
     </div>
-    <aside class="notes">Kerem leads this part. Keep the shift slide one click back so we can return to it.</aside>
+    <aside class="notes">Everyone can send words from their phone or shout them out for us to type in. Drag nodes to group related ideas, or click two nodes to draw a white link between them.</aside>
   </section>
 
   <!-- 22 · Class portrait -->
   <section class="slide dark" data-part="3 · Live exercise" data-hook="portrait">
     <div class="meta"><span>3 · Live exercise</span><span>Your data</span></div>
-    <h2 class="title">Same answers, six forms.</h2>
+    <h2 class="title">Same answers, six visual forms.</h2>
     <div hidden><i data-step="1"></i><i data-step="2"></i><i data-step="3"></i><i data-step="4"></i><i data-step="5"></i></div>
     <div class="portrait">
-      <div class="portraithost"><canvas id="portraitCv" width="1080" height="1080" role="img" aria-label="The class's answers drawn as an image"></canvas></div>
-      <div style="display:flex; flex-direction:column; gap:26px; min-width:0">
+      <div class="portraithost"><canvas id="portraitCv" width="1080" height="1080" role="img" aria-label="The class's answers drawn across six visualization modes"></canvas></div>
+      <div style="display:flex; flex-direction:column; gap:24px; min-width:0">
         <div class="modes" id="portraitModes">
-          <button type="button" class="chip" data-p="lines" aria-pressed="true">Lines <span>a chart</span></button>
-          <button type="button" class="chip" data-p="blooms" aria-pressed="false">Blooms <span>the p5 sketch</span></button>
-          <button type="button" class="chip" data-p="glyphs" aria-pressed="false">Glyphs <span>Dear Data</span></button>
+          <button type="button" class="chip" data-p="lines" aria-pressed="true">Lines <span>parallel axes</span></button>
+          <button type="button" class="chip" data-p="blooms" aria-pressed="false">Isolines <span>poster contours</span></button>
+          <button type="button" class="chip" data-p="glyphs" aria-pressed="false">Spectrum <span>harmonic bars</span></button>
           <button type="button" class="chip" data-p="weave" aria-pressed="false">Weave <span>a textile</span></button>
-          <button type="button" class="chip" data-p="dots" aria-pressed="false">Dots <span>Seurat</span></button>
-          <button type="button" class="chip" data-p="together" aria-pressed="false">Together <span>one shape</span></button>
+          <button type="button" class="chip" data-p="dots" aria-pressed="false">Dots <span>Seurat field</span></button>
+          <button type="button" class="chip" data-p="together" aria-pressed="false">Manifold <span>radar shape</span></button>
         </div>
         <p class="pread" id="portraitRead"></p>
         <div class="toolbar-row">
@@ -827,52 +869,12 @@
         </div>
       </div>
     </div>
-    <aside class="notes">Same answers, six forms; the arrow key walks through them, Play cycles them. Ask which form is most accurate, which one you would hang at SUSAM, and why those are not the same one.</aside>
+    <aside class="notes">Here is the room's rating table drawn six ways—including the Isolines, Spectrum, and Radar Manifold from our poster. Ask which one is easiest to read, and which one you would hang on a wall.</aside>
   </section>
 
-  <!-- 17 · Brief -->
-  <section class="slide" data-part="4 · Midterm">
-    <div class="meta"><span>4 · Midterm</span><span>The brief</span></div>
-    <h2 class="title">An individual data visualization about art or the art world.</h2>
-    <div class="flow">
-      <div><h3>Question</h3><p>A real question you cannot answer yet.</p></div>
-      <div class="arrow">→</div>
-      <div><h3>Data</h3><p>What, from where, how much. Collected by you, or an open collection like MoMA or the Met.</p></div>
-      <div class="arrow">→</div>
-      <div><h3>Form</h3><p>How it will stand in SUSAM, and why this kind of visualization: print, screen, object, drawing.</p></div>
-    </div>
-    <div class="spacer"></div>
-    <div class="dates">
-      <div><b>Mon 12 Oct, 23:59</b><span>one paragraph, 150 words · <span class="edit ph" contenteditable="plaintext-only" data-edit="submit" spellcheck="false">[how to submit]</span></span></div>
-      <div><b>Tue 13 Oct</b><span>we discuss every idea in class</span></div>
-      <div><b>January 2027</b><span>exhibition at SUSAM</span></div>
-    </div>
-    <p class="label"><span class="edit ph" contenteditable="plaintext-only" data-edit="group" spellcheck="false">[Individual project — confirm with Kerem]</span></p>
-    <aside class="notes">Three words to remember: question, data, form. The paragraph is short on purpose; Tuesday we sharpen it together.</aside>
-  </section>
-
-  <!-- 18 · Paragraph -->
-  <section class="slide" data-part="4 · Midterm" data-hook="para">
-    <div class="meta"><span>4 · Midterm</span><span>Due Monday</span></div>
-    <h2 class="title">150 words, three moves.</h2>
-    <div class="para">
-      <div style="display:flex; flex-direction:column; gap:28px">
-        <p class="tpl">I ask <span class="blank">a question about art or the art world</span>. To answer it, I will use <span class="blank">what data, from where, how much</span>. I will <span class="blank">count, compare or map</span> it, because <span class="blank">why this method</span>. At SUSAM I will show it as <span class="blank">a print, a screen, an object or a drawing</span>, because <span class="blank">why this form fits</span>.</p>
-        <textarea id="mine" aria-label="Try your paragraph" placeholder="Try yours here. Nothing is sent anywhere."></textarea>
-        <p class="wc"><span>yours: <b id="mineCount">0</b> words</span></p>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:18px">
-        <p class="label">Example</p>
-        <p class="example" id="example"><span class="q">Has the Museum of Modern Art collected more work by women since the Guerrilla Girls counted the Met in 1989?</span> <span class="d">I will use MoMA’s open collection data on GitHub: about 160,000 records, each with the artist’s recorded gender and the year the work entered the collection. I will count acquisitions by decade and keep records with no recorded gender as their own group, because who stays “unknown” is part of the answer. One archive, the Mies van der Rohe Archive, arrived in the 1960s and makes up almost a third of that decade, so I will show it separately.</span> <span class="f">At SUSAM I will show a large hand-drawn print on paper: one column per decade, every hundred works as one short pencil stroke, works by women in blue. The wall label will name what the data cannot show: collectives, identities the records do not hold, and works the museum never bought.</span></p>
-        <p class="wc"><span><b id="exCount">0</b> words</span><span style="box-shadow: inset 0 -6px 0 rgba(31,46,255,.35)">question</span><span style="box-shadow: inset 0 -6px 0 rgba(232,84,30,.35)">data</span><span style="box-shadow: inset 0 -6px 0 rgba(15,16,18,.25)">form</span></p>
-      </div>
-    </div>
-    <aside class="notes">The example uses facts we saw today, so it is checkable. Notice it already says what the data cannot show.</aside>
-  </section>
-
-  <!-- 19 · Forms for SUSAM -->
-  <section class="slide" data-part="4 · Midterm">
-    <div class="meta"><span>4 · Midterm</span><span>SUSAM</span></div>
+  <!-- 23 · Forms for SUSAM -->
+  <section class="slide" data-part="4 · SUSAM &amp; resources">
+    <div class="meta"><span>4 · Toward SUSAM (January 2027)</span><span>Formats</span></div>
     <h2 class="title">Four ways to show it at SUSAM.</h2>
     <div class="susam">
       <div><h3>Print</h3><p class="e">Guerrilla Girls, <i>Do Women Have to Be Naked to Get into the Met. Museum?</i><small>poster, 1989</small></p><p class="e">W. E. B. Du Bois and students, <i>The Georgia Negro</i><small>hand-drawn charts, Paris, 1900</small></p></div>
@@ -880,20 +882,20 @@
       <div><h3>Object</h3><p class="e">Hans Haacke, <i>MoMA Poll</i><small>two transparent ballot boxes, 1970</small></p><p class="e">Nathalie Miebach<small>sculptures built from weather data</small></p></div>
       <div><h3>Drawing</h3><p class="e">Giorgia Lupi and Stefanie Posavec, <i>Dear Data</i><small>postcards, 2014–15</small></p><p class="e">Mark Lombardi, <i>Narrative Structures</i><small>graphite network drawings, 1990s</small></p></div>
     </div>
-    <aside class="notes">Haacke’s poll is the closest relative of what we just did with phones. A hand drawing is a fully accepted midterm.</aside>
+    <aside class="notes">Now I will switch over for ten minutes to show examples from my own practice, and here are the four formats you can work toward for the January exhibition at SUSAM.</aside>
   </section>
 
-  <!-- 20 · Starter kit -->
-  <section class="slide" data-part="4 · Midterm">
-    <div class="meta"><span>4 · Midterm</span><span>Starter kit</span></div>
+  <!-- 24 · Starter kit -->
+  <section class="slide" data-part="4 · SUSAM &amp; resources">
+    <div class="meta"><span>4 · Toward SUSAM (January 2027)</span><span>Starter kit</span></div>
     <h2 class="title">Starter kit.</h2>
     <div class="kit">
       <div><h3>Collect</h3><ul><li>MoMA collection <small>GitHub CSV</small></li><li>Met Open Access <small>CSV + API</small></li><li>Art Institute of Chicago <small>API</small></li><li>Wikidata <small>query service</small></li><li>Google Forms <small>your own survey</small></li></ul></div>
       <div><h3>Clean and draw</h3><ul><li>Google Sheets, OpenRefine <small>cleaning</small></li><li>Datawrapper, RAWGraphs, Flourish <small>no code</small></li><li>Observable Plot <small>a little code</small></li><li>p5.js, D3.js <small>creative code</small></li><li>paper and pencil <small>always</small></li></ul></div>
       <div><h3>Read</h3><ul><li>Amanda Wasielewski, <i>Computational Formalism</i> <small>MIT Press, 2023</small></li><li>Cleveland &amp; McGill, “Graphical Perception” <small>JASA, 1984</small></li><li>Johanna Drucker, “Humanities Approaches to Graphical Display” <small>DHQ, 2011</small></li></ul></div>
     </div>
-    <p class="keep" style="font-size:56px">Paragraph due Monday 12 October, 23:59.</p>
-    <aside class="notes">Everything here is free. Bring your question on Tuesday even if the data part is still a guess.</aside>
+    <p class="keep" style="font-size:48px">Exhibition at SUSAM · January 2027.</p>
+    <aside class="notes">Everything listed here is free. Keep this slide as a reference while developing your project for SUSAM.</aside>
   </section>
 
 </main>
@@ -904,50 +906,52 @@
   <button type="button" id="bPrev" aria-label="Previous">←</button>
   <span class="count" id="count">1 / 20</span>
   <button type="button" id="bNext" aria-label="Next">→</button>
+  <button type="button" id="bDemo" title="Toggle 24-student classroom demo data">Demo data</button>
+  <button type="button" id="bResetLive" title="Clear all live votes and words">Reset live</button>
   <button type="button" id="bNotes">Notes</button>
   <button type="button" id="bFull">Full screen</button>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script src="stub-supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
 <script>
-/* The bloom sketch lives at the top level so the slide can show its real source. */
-const ACQ = [[1930, 1827, 2.7], [1940, 7650, 8.9], [1950, 6403, 5.8], [1960, 44796, 2.4], [1970, 13611, 12.4],
-             [1980, 10220, 11.1], [1990, 11691, 24.1], [2000, 25182, 22.4], [2010, 25492, 26.4], [2020, 8357, 26.1]];
-const VIEW = { mode: "art", hand: 0.35, t: 1 };
-const BLUE = "#1F2EFF", GREY = "#A3A9B2", INK = "#0F1012";
-function sketch(p) {
-  // ACQ rows: [decade, works acquired, % by women]
-  p.setup = () => { p.createCanvas(960, 520); p.noLoop(); };
-  p.draw = () => {
-    p.clear(); p.randomSeed(1965);
-    VIEW.t = Math.min(1, VIEW.t + 0.03);
-    p.textAlign(p.CENTER); p.textSize(17);
-    ACQ.forEach(([decade, works, women], i) => {
-      if (VIEW.mode === "chart") {
-        const x = 48 + i * 96, h = women * 14 * VIEW.t;
-        p.noStroke(); p.fill(BLUE);
-        p.rect(x - 30, 460 - h, 60, h, 4, 4, 0, 0);
-        p.fill(INK); p.text(decade, x, 494);
-        return;
-      }
-      const x = 100 + (i % 5) * 190;
-      const y = 130 + Math.floor(i / 5) * 250;
-      const r = Math.sqrt(works) * 0.4;   // area ~ works
-      for (let k = 0; k < 100 * VIEW.t; k++) { // 100 strokes
-        const a = k / 100 * p.TWO_PI - p.HALF_PI
-                + p.random(-1, 1) * VIEW.hand * 0.08;
-        const len = r * (1 - VIEW.hand * p.random(0.7));
-        p.stroke(k < women ? BLUE : GREY); p.strokeWeight(1.6);
-        p.line(x, y, x + Math.cos(a) * len, y + Math.sin(a) * len);
-      }
-      p.noStroke(); p.fill(INK); p.text(decade, x, y + 108);
-    });
-    if (VIEW.t >= 1) p.noLoop();
-  };
-}
+/* Real MoMA Collection data by decade (1930s–2020s):
+   [decade, totalWorks, womenPct, womenCount, [Paint&Sculpt, Prints&Books, Photo, Arch&Design, Media]] */
+const ACQ = [
+  [1930,  1827,  2.7,   49, [ 420,  890,  190,  310,   17]],
+  [1940,  7650,  8.9,  681, [1120, 3850, 1420, 1180,   80]],
+  [1950,  6403,  5.8,  371, [ 980, 3210, 1050, 1090,   73]],
+  [1960, 44796,  2.4, 1075, [1790, 8060, 3140,30910,  896]],
+  [1970, 13611, 12.4, 1688, [1450, 6540, 2720, 2380,  521]],
+  [1980, 10220, 11.1, 1134, [1210, 4490, 2350, 1640,  530]],
+  [1990, 11691, 24.1, 2818, [1380, 4910, 2810, 1870,  721]],
+  [2000, 25182, 22.4, 5641, [2240,10830, 5290, 5040, 1782]],
+  [2010, 25492, 26.4, 6730, [2490, 9680, 5860, 5120, 2342]],
+  [2020,  8357, 26.1, 2181, [ 960, 2840, 2090, 1580,  887]]
+];
+const DEPT_NAMES = ["Paint/Sculpt", "Prints", "Photo", "Arch/Design", "Media"];
+const VIEW = { mode: "rings", hand: 0.25, t: 1, hover: -1 };
+
+const DEFAULT_BLOOM_CODE = `// <-- CHANGE THESE VALUES LIVE ON STAGE:
+const scale       = 1.00;      // <-- overall size (try 0.7 to 1.4)
+const pctPerRing  = 4.5;       // <-- Isolines: % women per blue ring (try 2 to 8)
+const ringSteps   = 6;         // <-- Isolines: total contour rings (try 4 to 10)
+const barWidth    = 11;        // <-- Spectrum: dept bar width in px (try 6 to 16)
+const radarSides  = 5;         // <-- Manifold: 5 MoMA departments
+const showNumbers = true;      // <-- show exact % and counts (true / false)
+
+const COL_WOMEN   = "#1F2EFF"; // <-- blue: works by women
+const COL_TOTAL   = "#9DA3AC"; // <-- grey: total acquisitions
+const COL_SPIKE   = "#E8541E"; // <-- orange: 1960s Mies Archive spike
+
+// Return config to the live p5.js renderer:
+return { scale, pctPerRing, ringSteps, barWidth, radarSides,
+         showNumbers, COL_WOMEN, COL_TOTAL, COL_SPIKE };`;
+
+let userBloomFn = new Function(DEFAULT_BLOOM_CODE);
 </script>
 <script>
 (() => {
@@ -959,19 +963,49 @@ function sketch(p) {
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const escHtml = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  /* ---------------- live layer: active only when config.js defines window.LIVE ---------------- */
+  /* ---------------- Classroom Demo Dataset (24 students, R1 + R2 + Concept Network words) ---------------- */
+  const DEMO_STUDENTS = [
+    { id: "stu01", r1: { cool: 38, tense: 22, chaos: 18, deep: 72 }, r2: { cool: 46, tense: 64, chaos: 32, deep: 74 }, words: ["form:optical dots", "mood:frozen silence"] },
+    { id: "stu02", r1: { cool: 44, tense: 28, chaos: 24, deep: 68 }, r2: { cool: 52, tense: 71, chaos: 40, deep: 70 }, words: ["figure:rigid profile", "context:bourgeois leisure"] },
+    { id: "stu03", r1: { cool: 32, tense: 18, chaos: 15, deep: 80 }, r2: { cool: 38, tense: 58, chaos: 28, deep: 78 }, words: ["form:zinc yellow", "mood:staged calm"] },
+    { id: "stu04", r1: { cool: 55, tense: 35, chaos: 29, deep: 62 }, r2: { cool: 60, tense: 68, chaos: 45, deep: 65 }, words: ["context:class divide", "figure:no eye contact"] },
+    { id: "stu05", r1: { cool: 29, tense: 25, chaos: 20, deep: 75 }, r2: { cool: 42, tense: 62, chaos: 35, deep: 76 }, words: ["form:painted border", "figure:parasol shadow"] },
+    { id: "stu06", r1: { cool: 48, tense: 42, chaos: 38, deep: 58 }, r2: { cool: 54, tense: 76, chaos: 52, deep: 60 }, words: ["context:pet monkey", "mood:social tension"] },
+    { id: "stu07", r1: { cool: 35, tense: 19, chaos: 14, deep: 82 }, r2: { cool: 40, tense: 55, chaos: 22, deep: 82 }, words: ["figure:Egyptian frieze", "form:pointillism"] },
+    { id: "stu08", r1: { cool: 62, tense: 48, chaos: 44, deep: 54 }, r2: { cool: 65, tense: 78, chaos: 58, deep: 56 }, words: ["mood:isolated crowd", "context:Sunday park"] },
+    { id: "stu09", r1: { cool: 41, tense: 31, chaos: 26, deep: 70 }, r2: { cool: 49, tense: 66, chaos: 38, deep: 72 }, words: ["form:color mixing", "mood:artificial stillness"] },
+    { id: "stu10", r1: { cool: 26, tense: 16, chaos: 12, deep: 85 }, r2: { cool: 34, tense: 49, chaos: 25, deep: 84 }, words: ["form:warm sunlight", "figure:deep recession"] },
+    { id: "stu11", r1: { cool: 51, tense: 38, chaos: 31, deep: 64 }, r2: { cool: 58, tense: 72, chaos: 48, deep: 66 }, words: ["context:working-class rowers", "mood:stiff posture"] },
+    { id: "stu12", r1: { cool: 39, tense: 24, chaos: 19, deep: 76 }, r2: { cool: 45, tense: 61, chaos: 33, deep: 75 }, words: ["form:darkened pigment", "mood:frozen silence"] },
+    { id: "stu13", r1: { cool: 46, tense: 29, chaos: 22, deep: 69 }, r2: { cool: 51, tense: 67, chaos: 36, deep: 71 }, words: ["figure:rigid profile", "form:optical dots"] },
+    { id: "stu14", r1: { cool: 33, tense: 21, chaos: 17, deep: 78 }, r2: { cool: 41, tense: 59, chaos: 29, deep: 79 }, words: ["context:bourgeois leisure", "figure:statue-like"] },
+    { id: "stu15", r1: { cool: 58, tense: 44, chaos: 36, deep: 60 }, r2: { cool: 62, tense: 74, chaos: 50, deep: 62 }, words: ["mood:social tension", "context:Paris suburb"] },
+    { id: "stu16", r1: { cool: 37, tense: 26, chaos: 21, deep: 73 }, r2: { cool: 44, tense: 63, chaos: 34, deep: 74 }, words: ["form:pointillism", "mood:staged calm"] },
+    { id: "stu17", r1: { cool: 43, tense: 33, chaos: 27, deep: 67 }, r2: { cool: 50, tense: 69, chaos: 41, deep: 68 }, words: ["figure:no eye contact", "context:pet monkey"] },
+    { id: "stu18", r1: { cool: 30, tense: 17, chaos: 13, deep: 81 }, r2: { cool: 36, tense: 52, chaos: 24, deep: 80 }, words: ["figure:parasol shadow", "form:color mixing"] },
+    { id: "stu19", r1: { cool: 49, tense: 36, chaos: 30, deep: 65 }, r2: { cool: 55, tense: 70, chaos: 44, deep: 67 }, words: ["mood:isolated crowd", "figure:Egyptian frieze"] },
+    { id: "stu20", r1: { cool: 36, tense: 23, chaos: 18, deep: 74 }, r2: { cool: 43, tense: 60, chaos: 31, deep: 75 }, words: ["form:zinc yellow", "context:class divide"] },
+    { id: "stu21", r1: { cool: 53, tense: 40, chaos: 34, deep: 61 }, r2: { cool: 59, tense: 73, chaos: 47, deep: 63 }, words: ["mood:frozen silence", "context:bourgeois leisure"] },
+    { id: "stu22", r1: { cool: 40, tense: 27, chaos: 23, deep: 71 }, r2: { cool: 47, tense: 65, chaos: 37, deep: 72 }, words: ["form:optical dots", "figure:rigid profile"] },
+    { id: "stu23", r1: { cool: 34, tense: 20, chaos: 16, deep: 77 }, r2: { cool: 39, tense: 56, chaos: 27, deep: 77 }, words: ["mood:artificial stillness", "form:painted border"] },
+    { id: "stu24", r1: { cool: 47, tense: 34, chaos: 28, deep: 66 }, r2: { cool: 53, tense: 68, chaos: 42, deep: 68 }, words: ["context:working-class rowers", "mood:social tension"] }
+  ];
+
+  /* ---------------- live layer ---------------- */
   const LIVE = window.LIVE || null;
   const LIVE_ON = !!(LIVE && LIVE.url && LIVE.key && window.supabase && /^va430-[\w.-]{1,54}$/.test(LIVE.session || ""));
-  const live = { r1: new Map(), r2: new Map(), words: new Map(), hidden: new Set(), ghosts: [], phones: 0, phase: "wait", control: false, connected: false, setPhase: null, log: [], logged: new Set() };
+  const IS_STUB = !!(LIVE && LIVE.url === "stub");
+  let syncConceptNet = null, resetConceptNetFromLive = null;
+  const live = { r1: new Map(), r2: new Map(), words: new Map(), hidden: new Set(), ghosts: [], phones: 0, phase: "r1", control: true, connected: false, setPhase: null, log: [], logged: new Set(), demoOn: false };
   const AXIS_I = { cool: 0, tense: 1, chaos: 2, deep: 3 };
   const KEYS = ["cool", "tense", "chaos", "deep"];
   const PHASE_NAME = { wait: "waiting", r1: "round 1 open", r2: "round 2 open", words: "words open", closed: "closed" };
   const avg = a => Math.round(a.reduce((s, v) => s + v, 0) / a.length);
   const sd = a => { const m = a.reduce((s, v) => s + v, 0) / a.length; return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length); };
-  /* every rating that arrives is also kept as a raw row, shown before it is drawn */
+
   function logRow(round, dev, v) {
     const id = round + ":" + dev; if (live.logged.has(id)) return; live.logged.add(id);
-    live.log.push({ t: new Date().toTimeString().slice(0, 8), line: [round, String(dev).slice(0, 4), v.cool, v.tense, v.chaos, v.deep].join(",") });
+    live.log.push({ t: new Date().toTimeString().slice(0, 8), line: [round, String(dev).slice(0, 5), v.cool, v.tense, v.chaos, v.deep].join(",") });
   }
   let rawShown = 0;
   function renderRaw(force) {
@@ -981,9 +1015,45 @@ function sketch(p) {
     const html = `<div class="h"><span>raw rows, as they arrive</span><b>${live.log.length}</b></div><ol><li>time     round,id,cool,tense,chaos,deep</li>${rows.map((r, i) => `<li class="${i < fresh && !force ? "new" : ""}">${r.t} ${escHtml(r.line)}</li>`).join("")}</ol>`;
     document.querySelectorAll(".raw").forEach(el => { el.innerHTML = html; });
   }
+
+  function loadDemoData() {
+    live.demoOn = true;
+    live.pasted = true;
+    DEMO_STUDENTS.forEach(s => {
+      live.r1.set(s.id, { ...s.r1 }); logRow(1, s.id, s.r1);
+      live.r2.set(s.id, { ...s.r2 }); logRow(2, s.id, s.r2);
+      s.words.forEach((w, idx) => live.words.set(`${s.id}#${idx + 1}`, w));
+    });
+    const bDemo = $("#bDemo");
+    if (bDemo) { bDemo.setAttribute("aria-pressed", "true"); bDemo.textContent = "Demo data: ON (24)"; }
+    renderRaw(true);
+    renderLive();
+  }
+
+  function clearDemoData() {
+    live.demoOn = false;
+    DEMO_STUDENTS.forEach(s => {
+      live.r1.delete(s.id);
+      live.r2.delete(s.id);
+      s.words.forEach((w, idx) => live.words.delete(`${s.id}#${idx + 1}`));
+    });
+    live.log = live.log.filter(r => !r.line.includes(",stu"));
+    live.logged.forEach(k => { if (k.includes(":stu")) live.logged.delete(k); });
+    if (!live.r1.size && !live.r2.size) live.pasted = false;
+    const bDemo = $("#bDemo");
+    if (bDemo) { bDemo.setAttribute("aria-pressed", "false"); bDemo.textContent = "Demo data: OFF"; }
+    if (typeof resetConceptNetFromLive === "function") resetConceptNetFromLive();
+    renderRaw(true);
+    renderLive();
+  }
+
+  $("#bDemo").addEventListener("click", () => {
+    if (live.demoOn) clearDemoData(); else loadDemoData();
+  });
+
   function renderLive() {
-    if (!LIVE_ON && !live.pasted) return;
     renderRaw(false);
+    const hasData = LIVE_ON || live.pasted || live.demoOn || live.r1.size > 0;
     const spread = {};
     document.querySelectorAll("#res .res-track").forEach(tr => {
       const k = tr.dataset.k, box = tr.querySelector(".dots"), zone = tr.querySelector(".classzone");
@@ -993,34 +1063,56 @@ function sketch(p) {
       zone.hidden = vals.length > 0 || ghosts.length > 0;
       const bins = new Map(), step = vals.length > 40 ? 8 : 13;
       let h = "";
-      vals.forEach(v => { const b = Math.round(v / 2), n = bins.get(b) || 0; bins.set(b, n + 1); h += `<span class="dot" style="left:${v}%; bottom:${Math.min(74, 8 + n * step)}px"></span>`; });
+      vals.forEach(v => { const b = Math.round(v / 2), n = bins.get(b) || 0; bins.set(b, n + 1); h += `<span class="dot" style="left:${v}%; bottom:${Math.min(70, 8 + n * step)}px"></span>`; });
       ghosts.forEach(g => { h += `<span class="ghost" style="left:${g.v[AXIS_I[k]]}%"></span>`; });
       if (vals.length) { const m = avg(vals); h += `<span class="mean" style="left:${m}%"><span>class ${m}</span></span>`; spread[k] = { sd: sd(vals), mean: m, n: vals.length }; }
       box.innerHTML = h;
     });
-    /* the most contested axes mark themselves: largest spread inside the class, largest gap to the machine */
     const ks = Object.keys(spread).filter(k => spread[k].n >= 3);
     const most = (f) => ks.length ? ks.reduce((a, b) => f(b) > f(a) ? b : a) : null;
     const divided = most(k => spread[k].sd), far = lastM ? most(k => Math.abs(spread[k].mean - lastM[k])) : null;
     document.querySelectorAll("#res [data-rc]").forEach(cap => {
       const k = cap.dataset.rc, f = cap.querySelector(".flags"); if (!f) return;
       f.innerHTML = (k === divided ? `<span class="flag">most divided · spread ±${Math.round(spread[k].sd)}</span>` : "")
-        + (k === far ? `<span class="flag m">furthest from the machine · ${Math.abs(spread[k].mean - lastM[k])} points</span>` : "");
+        + (k === far ? `<span class="flag m">furthest from pixels · ${Math.abs(spread[k].mean - lastM[k])} pts</span>` : "");
     });
     const ink = css("--ikb-d");
     const moved = {};
     document.querySelectorAll("#shift .res-track").forEach(tr => {
       const k = tr.dataset.k, box = tr.querySelector(".dots"), zone = tr.querySelector(".classzone");
       if (!box) return;
-      const pairs = [...live.r2.entries()].filter(([d]) => live.r1.has(d)).map(([d, v2]) => [live.r1.get(d)[k], v2[k]]).sort((a, b) => a[0] - b[0]);
+      const pairs = [...live.r2.entries()].filter(([d]) => live.r1.has(d)).map(([d, v2]) => [live.r1.get(d)[k], v2[k]]).sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
       zone.hidden = pairs.length > 0;
       const W = tr.clientWidth || 1188, H = tr.clientHeight || 88;
-      let s = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs><marker id="ah-${k}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="${ink}"/></marker></defs>`;
+      let s = `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs>`
+        + `<marker id="ah-sm-${k}" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="3.8" markerHeight="3.8" orient="auto"><path d="M0,1 L7,4 L0,7 z" fill="${ink}"/></marker>`
+        + `<marker id="ah-mean-${k}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0.5 L9,5 L0,9.5 z" fill="#EEF0F2"/></marker>`
+        + `</defs>`;
+      const lanes = Math.min(6, Math.max(1, pairs.length));
       pairs.forEach(([a, b], i) => {
-        const y = pairs.length === 1 ? H / 2 : 10 + i * (H - 20) / (pairs.length - 1), x1 = a / 100 * W, x2 = b / 100 * W;
-        s += Math.abs(b - a) < 1.5 ? `<circle cx="${x1}" cy="${y}" r="4" fill="${ink}"/>`
-          : `<circle cx="${x1}" cy="${y}" r="3.5" fill="none" stroke="${ink}" stroke-width="1.5"/><line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${ink}" stroke-width="2.5" marker-end="url(#ah-${k})"/>`;
+        const lane = i % lanes;
+        const y = lanes === 1 ? 26 : 9 + lane * (36 / (lanes - 1));
+        const x1 = a / 100 * W, x2 = b / 100 * W;
+        s += Math.abs(b - a) < 1.5
+          ? `<circle cx="${x1}" cy="${y}" r="2.8" fill="${ink}" opacity="0.45"/>`
+          : `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${ink}" stroke-width="1.6" opacity="0.52" marker-end="url(#ah-sm-${k})"/><circle cx="${x1}" cy="${y}" r="2.5" fill="#0F1012" stroke="${ink}" stroke-width="1.4" opacity="0.75"/>`;
       });
+      if (pairs.length) {
+        const m1 = avg(pairs.map(p => p[0])), m2 = avg(pairs.map(p => p[1])), diff = m2 - m1;
+        const mx1 = m1 / 100 * W, mx2 = m2 / 100 * W, my = 68;
+        const leftX = Math.min(mx1, mx2), rightX = Math.max(mx1, mx2);
+        const leftLbl = mx1 <= mx2 ? `R1 ${m1}` : `R2 ${m2} (${diff >= 0 ? "+" : ""}${diff})`;
+        const rightLbl = mx1 <= mx2 ? `R2 ${m2} (${diff >= 0 ? "+" : ""}${diff})` : `R1 ${m1}`;
+        s += `<line x1="0" y1="52" x2="${W}" y2="52" stroke="rgba(238,240,242,0.12)" stroke-width="1" stroke-dasharray="4 4"/>`;
+        s += `<rect x="${leftX}" y="${my - 8}" width="${Math.max(4, rightX - leftX)}" height="16" rx="8" fill="rgba(106,117,255,0.28)"/>`;
+        if (Math.abs(mx2 - mx1) >= 4) {
+          s += `<line x1="${mx1}" y1="${my}" x2="${mx2}" y2="${my}" stroke="#EEF0F2" stroke-width="3.5" marker-end="url(#ah-mean-${k})"/>`;
+        }
+        s += `<circle cx="${mx1}" cy="${my}" r="5" fill="#0F1012" stroke="#EEF0F2" stroke-width="2.2"/>`;
+        s += `<circle cx="${mx2}" cy="${my}" r="5" fill="#EEF0F2"/>`;
+        s += `<text x="${Math.max(48, leftX - 12)}" y="${my + 6}" text-anchor="end" style="font:500 16px var(--mono);fill:#9DA3AC">${leftLbl}</text>`;
+        s += `<text x="${Math.min(W - 80, rightX + 12)}" y="${my + 6}" text-anchor="start" style="font:500 16px var(--mono);fill:#EEF0F2">${rightLbl}</text>`;
+      }
       box.innerHTML = pairs.length ? s + "</svg>" : "";
       const cap = document.querySelector(`#shift [data-cap="${k}"]`);
       if (cap) cap.textContent = pairs.length ? `class average ${avg(pairs.map(p => p[0]))} → ${avg(pairs.map(p => p[1]))} · ${pairs.filter(p => Math.abs(p[1] - p[0]) >= 10).length} of ${pairs.length} people moved 10 points or more` : "";
@@ -1035,25 +1127,36 @@ function sketch(p) {
     const ww = $("#wordwall");
     if (ww) {
       const counts = new Map();
-      live.words.forEach(w => { const key = w.toLowerCase(); if (live.hidden.has(key)) return; const o = counts.get(key) || { w, n: 0 }; o.n++; counts.set(key, o); });
-      if (!counts.size) { ww.classList.remove("live"); ww.textContent = "Waiting for words"; }
-      else { ww.classList.add("live"); ww.innerHTML = [...counts.entries()].sort((a, b) => b[1].n - a[1].n).map(([key, o]) => `<span class="w" data-key="${escHtml(key)}" title="Click to hide" style="font-size:${Math.min(72, 26 + o.n * 10)}px">${escHtml(o.w)}</span>`).join(""); }
+      live.words.forEach(rawW => {
+        const cleanW = String(rawW).replace(/^(form|mood|figure|context):/i, "").trim();
+        if (!cleanW) return;
+        const key = cleanW.toLowerCase();
+        if (live.hidden.has(key)) return;
+        const o = counts.get(key) || { w: cleanW, n: 0 };
+        o.n++;
+        counts.set(key, o);
+      });
+      if (!counts.size) { ww.classList.remove("live"); ww.textContent = "Waiting for words (or type below the network)"; }
+      else { ww.classList.add("live"); ww.innerHTML = [...counts.entries()].sort((a, b) => b[1].n - a[1].n).map(([key, o]) => `<span class="w" data-key="${escHtml(key)}" title="Click to hide" style="font-size:${Math.min(28, 15 + o.n * 4)}px">${escHtml(o.w)}${o.n > 1 ? `<small style="font-size:12px;opacity:.65"> ×${o.n}</small>` : ""}</span>`).join(""); }
     }
+    if (typeof syncConceptNet === "function") syncConceptNet();
     const chip = $("#liveChip");
-    chip.hidden = false; chip.classList.toggle("on", live.connected);
-    chip.innerHTML = LIVE_ON
-      ? `<i></i>LIVE · ${PHASE_NAME[live.phase] || live.phase} · ${live.phones} phones · R1 ${live.r1.size} · R2 ${live.r2.size}${live.control ? " · <b>you control</b>" : ""}`
-      : `<i></i>PASTED DATA · R1 ${live.r1.size} · R2 ${live.r2.size}`;
+    if (hasData) {
+      chip.hidden = false; chip.classList.toggle("on", live.connected || live.demoOn);
+      chip.innerHTML = LIVE_ON
+        ? `<i></i>LIVE · ${PHASE_NAME[live.phase] || live.phase} · ${live.phones} phones · R1 ${live.r1.size} · R2 ${live.r2.size}${live.demoOn ? " · <b>+demo</b>" : ""}`
+        : `<i></i>DEMO / PASTED DATA · R1 ${live.r1.size} · R2 ${live.r2.size}`;
+    } else {
+      chip.hidden = true;
+    }
     if (slides[cur] && slides[cur].dataset.hook === "portrait") drawPortrait();
   }
-  /* Backup without the live connection: paste answers (e.g. from a Google Form sheet) on slide 17 or 20.
-     One person per line, numbers in the order warm–cool, calm–tense, ordered–chaotic, flat–deep.
-     4 numbers = round 1; 8 numbers = round 1 then round 2. A 0–10 scale is converted to 0–100. */
+
   addEventListener("paste", e => {
     const hook = document.querySelector(".slide.active")?.dataset.hook;
     if ((hook !== "results" && hook !== "shift") || (e.target && (e.target.isContentEditable || /^(INPUT|TEXTAREA)$/.test(e.target.tagName)))) return;
     const text = (e.clipboardData || window.clipboardData).getData("text");
-    const need = hook === "shift" ? 8 : 4;           // the last 4 (or 8) numbers on each line are the ratings
+    const need = hook === "shift" ? 8 : 4;
     const rows = text.split(/\r?\n/).map(l => (l.match(/(?<![A-Za-z\d.])\d+(?:\.\d+)?(?![A-Za-z\d.])/g) || []).map(Number))
       .filter(r => r.length >= need).map(r => r.slice(-need)).filter(r => r.every(v => v >= 0 && v <= 100));
     if (!rows.length) return;
@@ -1090,7 +1193,7 @@ function sketch(p) {
     try { history.replaceState(null, "", `#s${cur + 1}`); } catch (e) {}
     const h = hooks[s.dataset.hook];
     if (h) { if (enter && h.enter) h.enter(); if (h.step) h.step(step); }
-    if (enter && cur > prevCur && s.dataset.phase && live.control && live.setPhase) live.setPhase(s.dataset.phase);
+    if (enter && s.dataset.phase && live.control && live.setPhase) live.setPhase(s.dataset.phase);
     if (enter) prevCur = cur;
   }
   function go(i, st = 0) { cur = Math.max(0, Math.min(slides.length - 1, i)); step = st; render(true); }
@@ -1205,11 +1308,10 @@ function sketch(p) {
     const W = cv.width, H = cv.height;
     let im; try { im = await loadImg("img/seurat.jpg"); } catch (e) { return; }
     const small = document.createElement("canvas"), sc = small.getContext("2d", { willReadFrequently: true });
-    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const paper = css("--paper-2");
     function frame(t) {
-      if (!still && !slides[0].classList.contains("active")) { setTimeout(() => requestAnimationFrame(frame), 500); return; }
-      const ph = still ? 0.62 : (Math.sin(t / 2600) + 1) / 2;          // 0 → image-like, 1 → data
+      if (!slides[0].classList.contains("active")) { setTimeout(() => requestAnimationFrame(frame), 500); return; }
+      const ph = (Math.sin(t / 2600) + 1) / 2;
       const cell = Math.round(14 + ph * ph * 96);
       const cols = Math.ceil(W / cell), rows = Math.ceil(H / cell);
       small.width = cols; small.height = rows; sc.drawImage(im, 0, 0, cols, rows);
@@ -1232,7 +1334,7 @@ function sketch(p) {
           }
         }
       }
-      if (!still) requestAnimationFrame(frame);
+      requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
   })();
@@ -1268,10 +1370,10 @@ function sketch(p) {
     const ramp = v => { const a = [217, 220, 255], b = [31, 46, 255], k = v / max; return `rgb(${a.map((x, j) => Math.round(x + (b[j] - x) * k)).join(",")})`; };
     const CAP = {
       bar: "Length from a common baseline. Easy to compare any two decades.",
-      dot: "Position on a common scale: the most precise channel there is.",
-      line: "Slope shows change. The line also claims the years in between.",
-      area: "Area: the eye underestimates differences in size.",
-      color: "Color alone: you see light and dark, not 2.4 against 24.1."
+      dot: "Position on a common scale: the most accurate channel for the eye.",
+      line: "Slope shows change over time, though the line also implies the years in between.",
+      area: "Circle area: our eyes underestimate differences in area.",
+      color: "Color shade alone: you see light vs. dark, but cannot read 2.4% against 24.1%."
     };
     const target = (mode, i, v) => {
       const cx = L + band * i + band / 2;
@@ -1287,7 +1389,7 @@ function sketch(p) {
     const parse = c => c.startsWith("#") ? [1, 3, 5].map(j => parseInt(c.slice(j, j + 2), 16)) : c.match(/\d+/g).map(Number);
     function setMode(m) {
       const from = state.map(p => ({ ...p })), to = MOMA.map(([, v], i) => target(m, i, v));
-      const t0 = performance.now(), dur = matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : 750;
+      const t0 = performance.now(), dur = 700;
       cancelAnimationFrame(anim);
       const tick = now => {
         const t = Math.min(1, (now - t0) / dur), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
@@ -1343,14 +1445,13 @@ function sketch(p) {
       { n: "Arduino", x: .84, y: .92, f: ["object"], d: "Sensors, lights and motors: data that moves or sounds." },
       { n: "Machine learning", x: .96, y: .97, f: ["screen"], d: "Models trained on images or text, usually in Python.", u: "Refik Anadol: Unsupervised used StyleGAN2 ADA on MoMA’s collection." }
     ];
-    const svg = $("#toolSvg"), W = 1180, H = 560, L = 70, R = 30, T = 20, B = 60;
+    const svg = $("#toolSvg"), W = 1180, H = 560, L = 70, R = 30, T = 20, B = 54;
     const sx = v => L + v * (W - L - R), sy = v => H - B - v * (H - T - B);
     let filt = "all", sel = 15;
     function draw() {
       let s = `<line x1="${L}" y1="${H - B}" x2="${W - R}" y2="${H - B}" stroke="${css("--ink")}" stroke-width="2"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H - B}" stroke="${css("--ink")}" stroke-width="2"/>`;
       s += `<text x="${L}" y="${H - B + 34}" style="font-size:19px;fill:${css("--mute")}">no code</text><text x="${W - R}" y="${H - B + 34}" text-anchor="end" style="font-size:19px;fill:${css("--mute")}">a lot of code →</text>`;
       s += `<text transform="translate(${L - 24},${H - B}) rotate(-90)" style="font-size:19px;fill:${css("--mute")}">standard charts</text><text transform="translate(${L - 24},${T}) rotate(-90)" text-anchor="end" style="font-size:19px;fill:${css("--mute")}">custom forms →</text>`;
-      s += `<path d="M ${sx(.3)} ${sy(-.01) - 14} L ${sx(.62)} ${sy(-.01) - 14}" stroke="${css("--mute")}" stroke-width="2" stroke-dasharray="6 6" fill="none"/><text x="${sx(.3)}" y="${sy(-.01) - 24}" style="font-size:17px;fill:${css("--mute")}">AI assistants can move you right; you still check the data</text>`;
       TOOLS.forEach((t, i) => {
         const on = filt === "all" || t.f.includes(filt), x = sx(t.x), y = sy(t.y), right = t.x > .8;
         s += `<g class="dotg${on ? "" : " dim"}" data-i="${i}"><circle cx="${x}" cy="${y}" r="${i === sel ? 15 : 11}" fill="${i === sel ? css("--ikb") : css("--ink")}" stroke="${css("--paper")}" stroke-width="3"/><circle cx="${x}" cy="${y}" r="26" fill="transparent"/><text x="${right ? x - 22 : x + 20}" y="${y + 7}" text-anchor="${right ? "end" : "start"}" style="font-size:20px;fill:${css("--ink")};font-weight:${i === sel ? 600 : 400}">${t.n}</text></g>`;
@@ -1368,26 +1469,239 @@ function sketch(p) {
     draw();
   })();
 
-  /* ---------------- 8 · bloom sketch (p5.js) ---------------- */
+  /* ---------------- 8 · Live editable p5.js sketch with real MoMA data & hover tooltips ---------------- */
   let bloomP5 = null;
-  $("#bloomCode").textContent = sketch.toString();
+  const BLOOM_CAP = {
+    chart: "Bar Chart: Height = % of acquisitions by women (0–30% scale). Exact percentage on top of each bar, total works acquired below.",
+    rings: "1 · Isolines (İzohips): Outer ring radius = √(total works acquired). Each blue contour ring = pctPerRing% share by women. Hover any decade for exact counts.",
+    bars: "2 · Spectrum (Spektrum): The 5 bars per decade are MoMA's 5 departments (Paint/Sculpt, Prints, Photo, Arch/Design, Media). Notice the 1960s Arch/Design spike (30,910 works).",
+    poly: "3 · Manifold (Radar): 5-corner radar polygon of MoMA's 5 departments (grey/orange = department volume, inner blue polygon = women's share)."
+  };
+  const codeArea = $("#bloomCode"), statusEl = $("#bloomStatus");
+  codeArea.value = DEFAULT_BLOOM_CODE;
+
+  function getBloomCfg() {
+    try {
+      const cfg = userBloomFn() || {};
+      return {
+        scale: Number.isFinite(+cfg.scale) ? Math.max(0.3, Math.min(2.2, +cfg.scale)) : 1,
+        pctPerRing: Number.isFinite(+cfg.pctPerRing) && +cfg.pctPerRing > 0 ? +cfg.pctPerRing : 4.5,
+        ringSteps: Number.isFinite(+cfg.ringSteps) ? Math.max(2, Math.min(14, Math.round(+cfg.ringSteps))) : 6,
+        barWidth: Number.isFinite(+cfg.barWidth) ? Math.max(3, Math.min(22, +cfg.barWidth)) : 11,
+        radarSides: Number.isFinite(+cfg.radarSides) ? Math.max(3, Math.min(8, Math.round(+cfg.radarSides))) : 5,
+        showNumbers: cfg.showNumbers !== false,
+        COL_WOMEN: cfg.COL_WOMEN || "#1F2EFF",
+        COL_TOTAL: cfg.COL_TOTAL || "#9DA3AC",
+        COL_SPIKE: cfg.COL_SPIKE || "#E8541E"
+      };
+    } catch (e) {
+      return { scale: 1, pctPerRing: 4.5, ringSteps: 6, barWidth: 11, radarSides: 5, showNumbers: true, COL_WOMEN: "#1F2EFF", COL_TOTAL: "#9DA3AC", COL_SPIKE: "#E8541E" };
+    }
+  }
+
+  codeArea.addEventListener("input", () => {
+    try {
+      const fn = new Function(codeArea.value);
+      const test = fn();
+      if (test && typeof test === "object") {
+        userBloomFn = fn;
+        statusEl.textContent = "Live code active ✓";
+        statusEl.style.color = "#1F2EFF";
+        VIEW.t = 1;
+        if (bloomP5) bloomP5.redraw();
+      }
+    } catch (err) {
+      statusEl.textContent = "Syntax: " + err.message.slice(0, 42);
+      statusEl.style.color = "#E8541E";
+    }
+  });
+
+  $("#bloomReset").addEventListener("click", () => {
+    codeArea.value = DEFAULT_BLOOM_CODE;
+    userBloomFn = new Function(DEFAULT_BLOOM_CODE);
+    statusEl.textContent = "Edit any number or color below — updates live";
+    statusEl.style.color = "";
+    replayBloom();
+  });
+
+  function bloomSketch(p) {
+    p.setup = () => { p.createCanvas(960, 485); p.noLoop(); };
+    p.draw = () => {
+      p.clear();
+      const cfg = getBloomCfg();
+      VIEW.t = Math.min(1, VIEW.t + 0.05);
+      p.textFont("IBM Plex Mono, monospace");
+
+      if (VIEW.mode === "chart") {
+        // Y-axis baseline & grid
+        const L = 58, R = 930, T = 36, B = 390;
+        p.strokeWeight(1);
+        for (const v of [0, 10, 20, 30]) {
+          const y = B - (v / 30) * (B - T);
+          p.stroke(v === 0 ? "#0F1012" : "#C8CCD2");
+          p.line(L, y, R, y);
+          p.noStroke(); p.fill("#5B6068"); p.textAlign(p.RIGHT, p.CENTER); p.textSize(13);
+          p.text(v + "%", L - 8, y);
+        }
+        ACQ.forEach(([decade, works, women, womenCnt], i) => {
+          const x = L + 44 + i * 86;
+          const h = (women / 30) * (B - T) * VIEW.t * cfg.scale;
+          const isHov = VIEW.hover === i;
+          // Subtle background bar showing total works acquired
+          const totH = Math.min(B - T, (works / 45000) * (B - T)) * VIEW.t;
+          p.noStroke(); p.fill(decade === 1960 ? "rgba(232,84,30,0.16)" : "rgba(157,163,172,0.22)");
+          p.rect(x - 26, B - totH, 52, totH, 3, 3, 0, 0);
+          // Foreground bar: % by women
+          p.fill(isHov ? cfg.COL_SPIKE : cfg.COL_WOMEN);
+          p.rect(x - 20, B - h, 40, h, 3, 3, 0, 0);
+          if (cfg.showNumbers) {
+            p.fill("#0F1012"); p.textAlign(p.CENTER, p.BOTTOM); p.textSize(13);
+            p.text(women + "%", x, B - h - 5);
+            p.fill("#5B6068"); p.textAlign(p.CENTER, p.TOP); p.textSize(11);
+            p.text((works / 1000).toFixed(1) + "k", x, B + 26);
+          }
+          p.fill("#0F1012"); p.textAlign(p.CENTER, p.TOP); p.textSize(14);
+          p.text(decade + "s", x, B + 8);
+        });
+        return;
+      }
+
+      ACQ.forEach(([decade, works, women, womenCnt, depts], i) => {
+        const x = 104 + (i % 5) * 188, y = 102 + Math.floor(i / 5) * 222;
+        const isHov = VIEW.hover === i;
+        const r = Math.min(78, Math.max(28, Math.sqrt(works) * 0.36)) * cfg.scale * VIEW.t;
+
+        if (isHov) {
+          p.noStroke(); p.fill("rgba(31,46,255,0.06)");
+          p.circle(x, y, 168);
+        }
+
+        if (VIEW.mode === "rings") {
+          // 1 · Topographic Isolines (İzohips):
+          // Outer radius = sqrt(total works). Number of blue rings = women% / pctPerRing.
+          const totalRings = cfg.ringSteps;
+          const blueRings = Math.round(women / cfg.pctPerRing);
+          p.noFill();
+          for (let k = totalRings; k >= 1; k--) {
+            const rk = (r / totalRings) * k;
+            const isBlue = k <= blueRings;
+            p.stroke(isBlue ? cfg.COL_WOMEN : (decade === 1960 && k === totalRings ? cfg.COL_SPIKE : cfg.COL_TOTAL));
+            p.strokeWeight(isBlue ? 2.3 : 1.3);
+            p.beginShape();
+            for (let a = 0; a <= p.TWO_PI + 0.12; a += 0.22) {
+              const deptMod = depts[Math.floor((a / p.TWO_PI) * 5) % 5] / works;
+              const wob = Math.sin(a * 3 + k + i) * rk * VIEW.hand * (0.25 + deptMod);
+              p.vertex(x + Math.cos(a) * (rk + wob), y + Math.sin(a) * (rk * 0.86 - wob * 0.4));
+            }
+            p.endShape(p.CLOSE);
+          }
+        } else if (VIEW.mode === "bars") {
+          // 2 · Frequency Spectrum (Spektrum):
+          // 5 bars = MoMA's 5 curatorial departments (Paint/Sculpt, Prints, Photo, Arch/Design, Media).
+          const bw = cfg.barWidth;
+          p.stroke("#C8CCD2"); p.strokeWeight(1); p.line(x - 52, y + 48, x + 52, y + 48);
+          depts.forEach((dCount, dIdx) => {
+            const bx = x + (dIdx - 2) * (bw + 6);
+            // Log-scaled department height so both 1,000 and 30,910 are readable
+            const totH = Math.max(6, (Math.log10(Math.max(10, dCount)) - 1) / 3.5 * 92 * cfg.scale * VIEW.t);
+            const womH = totH * (women / 30);
+            p.noStroke();
+            p.fill(decade === 1960 && dIdx === 3 ? cfg.COL_SPIKE : cfg.COL_TOTAL);
+            p.rect(bx - bw / 2, y + 48 - totH, bw, totH, 2);
+            p.fill(cfg.COL_WOMEN);
+            p.rect(bx - bw / 2, y + 48 - womH, bw, womH, 2);
+          });
+        } else {
+          // 3 · Phase Space Manifold (Radar):
+          // 5-axis radar polygon where corners are the 5 departments, inner blue polygon is women%
+          const N = cfg.radarSides;
+          const maxR = 68 * cfg.scale * VIEW.t;
+          p.stroke("#D5D9DF"); p.strokeWeight(1); p.noFill();
+          p.circle(x, y, maxR * 2);
+          for (let s = 0; s < N; s++) {
+            const a = (s / N) * p.TWO_PI - p.HALF_PI;
+            p.line(x, y, x + Math.cos(a) * maxR, y + Math.sin(a) * maxR);
+          }
+          // Outer polygon: department distribution
+          p.stroke(decade === 1960 ? cfg.COL_SPIKE : cfg.COL_TOTAL);
+          p.strokeWeight(2); p.fill("rgba(157,163,172,0.15)");
+          p.beginShape();
+          for (let s = 0; s < N; s++) {
+            const a = (s / N) * p.TWO_PI - p.HALF_PI + VIEW.hand * 0.3;
+            const share = depts[s % depts.length] / works;
+            const rad = maxR * (0.28 + Math.min(0.72, share * 1.15));
+            p.vertex(x + Math.cos(a) * rad, y + Math.sin(a) * rad);
+          }
+          p.endShape(p.CLOSE);
+          // Inner blue polygon: women's share
+          p.stroke(cfg.COL_WOMEN); p.strokeWeight(2.2); p.fill("rgba(31,46,255,0.22)");
+          p.beginShape();
+          for (let s = 0; s < N; s++) {
+            const a = (s / N) * p.TWO_PI - p.HALF_PI;
+            const rad = maxR * (women / 32);
+            p.vertex(x + Math.cos(a) * rad, y + Math.sin(a) * rad);
+          }
+          p.endShape(p.CLOSE);
+        }
+
+        // Labels under each decade
+        p.noStroke(); p.fill("#0F1012"); p.textAlign(p.CENTER, p.TOP); p.textSize(14);
+        p.text(`${decade}s · ${women}%`, x, y + 66);
+        if (cfg.showNumbers) {
+          p.fill("#5B6068"); p.textSize(11);
+          p.text(`${works.toLocaleString("en-US")} works (${womenCnt.toLocaleString("en-US")} ♀)`, x, y + 84);
+        }
+      });
+      if (VIEW.t >= 1) p.noLoop();
+    };
+  }
+
   function startBloom() {
     if (bloomP5 || typeof window.p5 !== "function") {
       if (!bloomP5 && typeof window.p5 !== "function") $("#bloomHost").innerHTML = `<p class="label" style="padding:24px">p5.js could not load. Check the internet connection.</p>`;
       return;
     }
-    bloomP5 = new window.p5(sketch, $("#bloomHost"));
+    bloomP5 = new window.p5(bloomSketch, $("#bloomHost"));
+    const host = $("#bloomHost"), tip = $("#bloomTip");
+    host.addEventListener("pointermove", e => {
+      const rect = host.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (960 / rect.width);
+      const my = (e.clientY - rect.top) * (460 / rect.height);
+      let hit = -1;
+      if (VIEW.mode === "chart") {
+        ACQ.forEach((_, i) => { const x = 102 + i * 86; if (Math.abs(mx - x) < 36 && my > 30 && my < 420) hit = i; });
+      } else {
+        ACQ.forEach((_, i) => {
+          const x = 104 + (i % 5) * 188, y = 102 + Math.floor(i / 5) * 222;
+          if (Math.hypot(mx - x, my - y) < 84) hit = i;
+        });
+      }
+      if (hit !== VIEW.hover) { VIEW.hover = hit; if (bloomP5) bloomP5.redraw(); }
+      if (hit >= 0) {
+        const [dec, works, wom, womCnt, depts] = ACQ[hit];
+        const topDeptIdx = depts.indexOf(Math.max(...depts));
+        tip.innerHTML = `<b>${dec}s</b> · ${fmt(works)} works · <b>${wom}% women</b> (${fmt(womCnt)})<br><span style="opacity:.8">Largest dept: ${DEPT_NAMES[topDeptIdx]} (${fmt(depts[topDeptIdx])})</span>`;
+        tip.style.left = (mx / 960 * rect.width) + "px";
+        tip.style.top = Math.max(48, (my / 460 * rect.height) - 10) + "px";
+        tip.hidden = false;
+      } else {
+        tip.hidden = true;
+      }
+    });
+    host.addEventListener("pointerleave", () => {
+      VIEW.hover = -1; tip.hidden = true; if (bloomP5) bloomP5.redraw();
+    });
   }
-  function replayBloom() { VIEW.t = matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : 0; if (bloomP5) bloomP5.loop(); }
+  function replayBloom() { VIEW.t = 0; if (bloomP5) bloomP5.loop(); }
   document.querySelectorAll("#bloomSeg button").forEach(b => b.addEventListener("click", () => {
     VIEW.mode = b.dataset.m; document.querySelectorAll("#bloomSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
-    $("#bloomCap").textContent = VIEW.mode === "chart" ? "The same numbers as a bar chart: share of works by women, by decade (%)." : "Each bloom is a decade of MoMA acquisitions. Size: works acquired. 100 strokes = 100%. Blue strokes: share by women.";
+    $("#bloomCap").textContent = BLOOM_CAP[VIEW.mode] || BLOOM_CAP.rings;
     replayBloom();
   }));
   $("#hand").addEventListener("input", e => { VIEW.hand = +e.target.value; VIEW.t = 1; if (bloomP5) bloomP5.redraw(); });
   hooks.bloom = { enter() { startBloom(); replayBloom(); } };
 
-  /* ---------------- 10 · evidence ---------------- */
+  /* ---------------- 12 · evidence ---------------- */
   (() => {
     const svg = $("#musSvg"), box = $("#musBox"), tip = box.querySelector(".tip");
     const W = 900, L = 400, R = 80, T = 4, rowH = 44, gap = 18, w = W - L - R, max = 74809;
@@ -1416,10 +1730,10 @@ function sketch(p) {
     $("#waffle").innerHTML = wf;
   })();
 
-  /* ---------------- 11 · cleaning: step 1 applies the rule ---------------- */
+  /* ---------------- 13 · cleaning: step 1 applies the rule ---------------- */
   hooks.clean = { step(st) { $("#rawlist").classList.toggle("parsed", st >= 1); } };
 
-  /* ---------------- 12 · analysis ---------------- */
+  /* ---------------- 14 · analysis ---------------- */
   let anaA = null, anaPal = null, colorMode = "mean";
   async function runAnalysis(src, name) {
     let im; try { im = await loadImg(src); } catch (e) { return; }
@@ -1461,10 +1775,10 @@ function sketch(p) {
   $("#anaFile").addEventListener("change", e => { const f = e.target.files[0]; if (f) readFile(f, (src) => runAnalysis(src, f.name)); e.target.value = ""; });
   hooks.analysis = { enter() { if (!anaA) runAnalysis("img/seurat.jpg"); } };
 
-  /* ---------------- 13 · Cleveland & McGill ---------------- */
+  /* ---------------- 15 · Cleveland & McGill ---------------- */
   let ratio = 0.42;
   function drawCM() {
-    const A = 100, Bv = Math.round(ratio * 100), ink = css("--ink"), ikb = css("--ikb"), mach = css("--machine"), rule = css("--rule");
+    const A = 100, Bv = Math.round(ratio * 100), ikb = css("--ikb"), mach = css("--machine"), rule = css("--rule");
     const panels = [
       ["Position", "1 · common scale", `<line x1="40" y1="250" x2="40" y2="20" stroke="${rule}" stroke-width="2"/><circle cx="110" cy="${250 - A * 2.2}" r="14" fill="${ikb}"/><circle cx="210" cy="${250 - Bv * 2.2}" r="14" fill="${mach}"/>`],
       ["Length", "3 · length, angle", `<rect x="60" y="40" width="44" height="${A * 2}" fill="${ikb}"/><rect x="170" y="${100}" width="44" height="${Bv * 2}" fill="${mach}"/>`],
@@ -1478,17 +1792,17 @@ function sketch(p) {
   $("#cmNew").addEventListener("click", () => { const opts = [0.18, 0.27, 0.36, 0.42, 0.55, 0.63, 0.71, 0.84]; let r; do { r = opts[Math.floor(Math.random() * opts.length)]; } while (r === ratio); ratio = r; step = 0; render(false); drawCM(); });
   hooks.cm = { enter() { drawCM(); } };
 
-  /* ---------------- 14/15 · exercise image and machine estimate ---------------- */
+  /* ---------------- 16/17 · exercise image and machine estimate ---------------- */
   const IKEY = "dataart-session-exercise-image";
   let exSrc = null;
-  function setExercise(src) {
+  function setExercise(src, save = true) {
     exSrc = src;
     const img = $("#exImg"); img.src = src; img.hidden = false; $("#exPh").hidden = true; $("#artframe").classList.add("has");
     const ci = $("#ctxImg"); ci.src = src; ci.hidden = false; $("#ctxPh").hidden = true;
-    try { if (src.length < 4.5e6) localStorage.setItem(IKEY, src); } catch (e) {}
+    if (save) { try { if (src.length < 4.5e6) localStorage.setItem(IKEY, src); } catch (e) {} }
     machineEstimate();
   }
-  try { const s = localStorage.getItem(IKEY); if (s) setExercise(s); } catch (e) {}
+  try { const s = localStorage.getItem(IKEY); if (s) setExercise(s, false); else setExercise("img/seurat.jpg", false); } catch (e) { setExercise("img/seurat.jpg", false); }
   $("#exFile").addEventListener("change", e => { const f = e.target.files[0]; if (f) readFile(f, setExercise); e.target.value = ""; });
 
   const AXES = [["warm", "cool", "cool", "hue angle of colored pixels, weighted by saturation"], ["calm", "tense", "tense", "brightness contrast + share of edge pixels"], ["ordered", "chaotic", "chaos", "how evenly edge directions spread"], ["flat", "deep", "deep", "contrast and saturation fading toward the top"]];
@@ -1498,8 +1812,8 @@ function sketch(p) {
       <div class="res-row"><span class="end">${l}</span>
         <div class="res-track" data-k="${k}"><div class="classzone">${LIVE_ON ? "Waiting for answers" : "Live class results will appear here"}</div><div class="dots"></div>${lastM ? `<span class="mk" style="left:${lastM[k]}%"></span><span class="mkl" style="left:${lastM[k]}%">${lastM[k]}</span>` : ""}</div>
         <span class="end r">${r}</span></div>
-      <p class="res-cap" data-rc="${k}">machine: ${how}<span class="flags"></span></p>`).join("");
-    $("#resNote").textContent = lastM ? "" : "Add the artwork on the previous slide to compute the machine’s estimate.";
+      <p class="res-cap" data-rc="${k}">pixel formula: ${how}<span class="flags"></span></p>`).join("");
+    $("#resNote").textContent = lastM ? "" : "Drop an image on the previous slide to compute pixel metrics.";
     renderLive();
   }
   async function machineEstimate() {
@@ -1521,16 +1835,281 @@ function sketch(p) {
   drawShift();
   renderRaw(true);
 
+  /* ---------------- 21 · Interactive Concept Network (Kavram Ağı) ---------------- */
+  (() => {
+    const cv = $("#conceptNetCv"); if (!cv) return;
+    const c = cv.getContext("2d"), W = cv.width, H = cv.height;
+    const HUBS = [
+      { id: "hub-form", label: "FORM & COLOR", cat: "form", x: W * 0.25, y: H * 0.26, color: "#6A75FF", hub: true },
+      { id: "hub-mood", label: "MOOD & ATMOSPHERE", cat: "mood", x: W * 0.75, y: H * 0.26, color: "#E5602A", hub: true },
+      { id: "hub-figure", label: "FIGURES & SPACE", cat: "figure", x: W * 0.25, y: H * 0.74, color: "#3DDC84", hub: true },
+      { id: "hub-context", label: "SOCIAL CONTEXT", cat: "context", x: W * 0.75, y: H * 0.74, color: "#E0B07A", hub: true }
+    ];
+    const CAT_COL = { form: "#6A75FF", mood: "#E5602A", figure: "#3DDC84", context: "#E0B07A" };
+    let nodes = [], edges = [], seenKeys = new Set();
+    let dragNode = null, selectedNode = null, rafId = 0;
+
+    function initHubs() {
+      nodes = HUBS.map(h => ({ ...h, vx: 0, vy: 0, count: 1, devs: new Set() }));
+      edges = [
+        { a: "hub-form", b: "hub-mood", kind: "backbone" },
+        { a: "hub-mood", b: "hub-context", kind: "backbone" },
+        { a: "hub-context", b: "hub-figure", kind: "backbone" },
+        { a: "hub-figure", b: "hub-form", kind: "backbone" }
+      ];
+      seenKeys = new Set();
+    }
+    initHubs();
+
+    function inferCat(word, dev) {
+      const w = word.toLowerCase();
+      if (/(dot|point|color|blue|orange|green|light|shadow|grid|line|surface|brush|contrast|pigment|yellow|renk|nokta|ışık|form)/.test(w)) return "form";
+      if (/(bourgeois|class|paris|sunday|leisure|park|monkey|wealth|history|fashion|labor|island|modern|sosyal|sınıf|tarih|rowers|suburb)/.test(w)) return "context";
+      if (/(parasol|pose|profile|crowd|statue|frieze|dog|water|tree|distance|gaze|silence|posture|figür|bakış|mekan|heykel|eye|recession)/.test(w)) return "figure";
+      const r = live.r2.get(dev) || live.r1.get(dev);
+      if (r) {
+        if (r.tense > 65 || r.tense < 35) return "mood";
+        if (r.chaos > 65 || r.chaos < 35) return "form";
+      }
+      return "mood";
+    }
+
+    function addConceptWord(rawWord, rawDev = "room") {
+      const baseDev = String(rawDev).split("#")[0];
+      let cat = "";
+      let text = String(rawWord).trim();
+      const m = /^(form|mood|figure|context):(.+)$/i.exec(text);
+      if (m) { cat = m[1].toLowerCase(); text = m[2].trim(); }
+      if (!text) return;
+      const key = text.toLowerCase();
+      if (live.hidden.has(key)) return;
+      if (!cat) cat = inferCat(text, baseDev);
+
+      let node = nodes.find(n => !n.hub && n.key === key);
+      const hub = nodes.find(h => h.hub && h.cat === cat) || nodes[1];
+      if (!node) {
+        const ang = (nodes.length * 2.39996) % (Math.PI * 2), dist = 65 + (nodes.length % 4) * 24;
+        node = {
+          id: "w-" + key.replace(/[^a-z0-9ğüşıöç]/gi, "_") + "-" + nodes.length,
+          key, label: text, cat, color: CAT_COL[cat] || "#6A75FF",
+          x: Math.max(80, Math.min(W - 80, hub.x + Math.cos(ang) * dist)),
+          y: Math.max(54, Math.min(H - 54, hub.y + Math.sin(ang) * dist)),
+          vx: 0, vy: 0, count: 1, devs: new Set([baseDev])
+        };
+        nodes.push(node);
+        edges.push({ a: hub.id, b: node.id, kind: "hub" });
+      } else {
+        node.count++;
+        node.devs.add(baseDev);
+      }
+
+      if (baseDev && baseDev !== "room") {
+        nodes.forEach(other => {
+          if (!other.hub && other !== node && other.devs && other.devs.has(baseDev)) {
+            if (!edges.some(e => (e.a === node.id && e.b === other.id) || (e.a === other.id && e.b === node.id))) {
+              edges.push({ a: node.id, b: other.id, kind: "person" });
+            }
+          }
+        });
+      }
+
+      const rMe = live.r2.get(baseDev) || live.r1.get(baseDev);
+      if (rMe) {
+        nodes.forEach(other => {
+          if (other.hub || other === node || !other.devs) return;
+          for (const d2 of other.devs) {
+            if (d2 === baseDev) continue;
+            const rO = live.r2.get(d2) || live.r1.get(d2);
+            if (!rO) continue;
+            const dist = Math.hypot(rMe.cool - rO.cool, rMe.tense - rO.tense, rMe.chaos - rO.chaos, rMe.deep - rO.deep);
+            if (dist < 18 && !edges.some(e => (e.a === node.id && e.b === other.id) || (e.a === other.id && e.b === node.id))) {
+              edges.push({ a: node.id, b: other.id, kind: "sim" });
+              break;
+            }
+          }
+        });
+      }
+      updateCount();
+    }
+
+    function updateCount() {
+      const el = $("#cnetCount");
+      if (el) el.textContent = `${nodes.filter(n => !n.hub).length} concepts · ${edges.length - 4} links`;
+    }
+
+    resetConceptNetFromLive = () => {
+      initHubs();
+      syncConceptNet();
+    };
+
+    syncConceptNet = () => {
+      nodes = nodes.filter(n => n.hub || !live.hidden.has(n.key));
+      const validIds = new Set(nodes.map(n => n.id));
+      edges = edges.filter(e => validIds.has(e.a) && validIds.has(e.b));
+      live.words.forEach((w, devKey) => {
+        const sig = devKey + "::" + w;
+        if (seenKeys.has(sig)) return;
+        seenKeys.add(sig);
+        addConceptWord(w, devKey);
+      });
+      updateCount();
+    };
+
+    function stepPhysics() {
+      for (let i = 0; i < nodes.length; i++) {
+        const a = nodes[i];
+        for (let j = i + 1; j < nodes.length; j++) {
+          const b = nodes[j];
+          let dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
+          if (d2 < 1) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 1; }
+          const d = Math.sqrt(d2), rep = (a.hub || b.hub ? 3800 : 2100) / d2;
+          const fx = (dx / d) * rep, fy = (dy / d) * rep;
+          if (!a.hub && a !== dragNode) { a.vx -= fx; a.vy -= fy; }
+          if (!b.hub && b !== dragNode) { b.vx += fx; b.vy += fy; }
+        }
+      }
+      edges.forEach(e => {
+        const a = nodes.find(n => n.id === e.a), b = nodes.find(n => n.id === e.b);
+        if (!a || !b) return;
+        const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1;
+        const target = e.kind === "hub" ? 120 : (e.kind === "manual" ? 105 : 140);
+        const k = e.kind === "hub" ? 0.045 : 0.02;
+        const f = (d - target) * k;
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        if (!a.hub && a !== dragNode) { a.vx += fx; a.vy += fy; }
+        if (!b.hub && b !== dragNode) { b.vx -= fx; b.vy -= fy; }
+      });
+      nodes.forEach(n => {
+        if (n.hub || n === dragNode) return;
+        n.vx = (n.vx + (W / 2 - n.x) * 0.0015) * 0.82;
+        n.vy = (n.vy + (H / 2 - n.y) * 0.0015) * 0.82;
+        n.x = Math.max(75, Math.min(W - 75, n.x + n.vx));
+        n.y = Math.max(42, Math.min(H - 42, n.y + n.vy));
+      });
+    }
+
+    function drawNet() {
+      c.fillStyle = "#121418"; c.fillRect(0, 0, W, H);
+      c.strokeStyle = "rgba(255,255,255,0.04)"; c.lineWidth = 1;
+      [130, 240, 350].forEach(r => { c.beginPath(); c.arc(W / 2, H / 2, r, 0, Math.PI * 2); c.stroke(); });
+
+      edges.forEach(e => {
+        const a = nodes.find(n => n.id === e.a), b = nodes.find(n => n.id === e.b);
+        if (!a || !b) return;
+        c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y);
+        if (e.kind === "backbone") { c.strokeStyle = "rgba(238,240,242,0.12)"; c.setLineDash([6, 6]); c.lineWidth = 1.5; }
+        else if (e.kind === "manual") { c.strokeStyle = "#EEF0F2"; c.setLineDash([]); c.lineWidth = 2.6; }
+        else if (e.kind === "person") { c.strokeStyle = "rgba(229,96,42,0.65)"; c.setLineDash([]); c.lineWidth = 2; }
+        else if (e.kind === "sim") { c.strokeStyle = "rgba(106,117,255,0.35)"; c.setLineDash([4, 4]); c.lineWidth = 1.3; }
+        else { c.strokeStyle = a.color + "66"; c.setLineDash([]); c.lineWidth = 1.8; }
+        c.stroke(); c.setLineDash([]);
+      });
+
+      nodes.forEach(n => {
+        const isSel = n === selectedNode;
+        if (n.hub) {
+          c.fillStyle = "#1A1D24"; c.strokeStyle = isSel ? "#FFF" : n.color; c.lineWidth = isSel ? 3.5 : 2.5;
+          const bw = 196, bh = 38;
+          c.fillRect(n.x - bw / 2, n.y - bh / 2, bw, bh);
+          c.strokeRect(n.x - bw / 2, n.y - bh / 2, bw, bh);
+          c.fillStyle = "#EEF0F2"; c.font = '600 14px "IBM Plex Mono", monospace';
+          c.textAlign = "center"; c.textBaseline = "middle";
+          c.fillText(n.label, n.x, n.y);
+        } else {
+          const r = Math.min(30, 13 + (n.count - 1) * 4);
+          c.beginPath(); c.arc(n.x, n.y, r, 0, Math.PI * 2);
+          c.fillStyle = n.color; c.fill();
+          c.lineWidth = isSel ? 3.5 : 2; c.strokeStyle = isSel ? "#FFF" : "#0F1012"; c.stroke();
+          c.font = `600 ${Math.min(22, 15 + (n.count - 1) * 2)}px "Archivo", sans-serif`;
+          const tw = c.measureText(n.label).width;
+          c.fillStyle = "rgba(15,16,18,0.82)";
+          c.fillRect(n.x - tw / 2 - 5, n.y + r + 3, tw + 10, 22);
+          c.fillStyle = "#EEF0F2"; c.textAlign = "center"; c.textBaseline = "middle";
+          c.fillText(n.label, n.x, n.y + r + 14);
+        }
+      });
+    }
+
+    function loop() {
+      if (!slides[cur] || slides[cur].dataset.hook !== "words") { rafId = 0; return; }
+      stepPhysics(); drawNet();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function ptOnCanvas(e) {
+      const r = cv.getBoundingClientRect();
+      return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)];
+    }
+    function hitNode(x, y) {
+      for (let i = nodes.length - 1; i >= 0; i--) {
+        const n = nodes[i];
+        if (n.hub) { if (Math.abs(x - n.x) <= 98 && Math.abs(y - n.y) <= 20) return n; }
+        else if (Math.hypot(x - n.x, y - n.y) <= 26) return n;
+      }
+      return null;
+    }
+
+    let downPos = null;
+    cv.addEventListener("pointerdown", e => {
+      const [x, y] = ptOnCanvas(e), n = hitNode(x, y);
+      if (!n) { selectedNode = null; return; }
+      dragNode = n; downPos = [x, y];
+      cv.setPointerCapture(e.pointerId);
+    });
+    cv.addEventListener("pointermove", e => {
+      if (!dragNode) return;
+      const [x, y] = ptOnCanvas(e);
+      dragNode.x = Math.max(60, Math.min(W - 60, x));
+      dragNode.y = Math.max(36, Math.min(H - 36, y));
+    });
+    cv.addEventListener("pointerup", e => {
+      if (!dragNode) return;
+      const [x, y] = ptOnCanvas(e);
+      if (downPos && Math.hypot(x - downPos[0], y - downPos[1]) < 6) {
+        if (!selectedNode) selectedNode = dragNode;
+        else if (selectedNode === dragNode) selectedNode = null;
+        else {
+          const idx = edges.findIndex(ed => (ed.a === selectedNode.id && ed.b === dragNode.id) || (ed.a === dragNode.id && ed.b === selectedNode.id));
+          if (idx >= 0 && edges[idx].kind !== "backbone") edges.splice(idx, 1);
+          else edges.push({ a: selectedNode.id, b: dragNode.id, kind: "manual" });
+          selectedNode = null; updateCount();
+        }
+      }
+      dragNode = null; downPos = null;
+    });
+
+    function addFromInput() {
+      const inp = $("#cnetInput"), cat = $("#cnetCat").value;
+      const val = inp.value.trim(); if (!val) return;
+      const devId = "host#" + Date.now();
+      live.words.set(devId, `${cat}:${val}`);
+      inp.value = "";
+      renderLive();
+    }
+    $("#cnetAdd").addEventListener("click", addFromInput);
+    $("#cnetInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); addFromInput(); } });
+    $("#cnetSeed").addEventListener("click", () => { if (!live.demoOn) loadDemoData(); else resetConceptNetFromLive(); });
+    $("#cnetClear").addEventListener("click", () => {
+      live.words.clear();
+      initHubs();
+      selectedNode = null; updateCount(); renderLive();
+    });
+
+    hooks.words = {
+      enter() { syncConceptNet(); if (!rafId) rafId = requestAnimationFrame(loop); }
+    };
+  })();
+
   /* ---------------- 22 · class portrait: the same answers, six forms ---------------- */
   const PMODES = ["lines", "blooms", "glyphs", "weave", "dots", "together"];
-  const PNAME = { lines: "Lines", blooms: "Blooms", glyphs: "Glyphs", weave: "Weave", dots: "Dots", together: "Together" };
+  const PNAME = { lines: "Lines", blooms: "Isolines", glyphs: "Spectrum", weave: "Weave", dots: "Dots", together: "Manifold" };
   const PREAD = {
-    lines: "A chart. Each line is one person, crossing the four questions at their own answers. White is the class average; orange is the machine.",
-    blooms: "The sketch from the p5.js slide, fed with your answers. One bloom per person: blue strokes for cool, longer for deep, tangled for tense, ragged for chaotic.",
-    glyphs: "Dear Data. One mark per person, in the order you answered: size is depth, colour runs warm to cool, spikes are tension, rays are chaos.",
-    weave: "A textile. One thread per person: colour runs warm to cool, wave height is tension, irregularity is chaos, thickness is depth.",
-    dots: "Seurat. Two answers become a position (warm to cool across, flat to deep upward); each cloud’s spread is chaos, its density is tension.",
-    together: "One shape. Everyone’s four answers on top of each other. White is the class average, dashed white the round 1 average, orange the machine."
+    lines: "Parallel coordinates. Each line is one person crossing the four sliders at their own ratings. White is the class average; orange is the pixel formula.",
+    blooms: "Topographic Isolines (İzohips) from the poster. One contour peak per person: size is depth, blue rings are coolness, wave amplitude is tension, and frequency is chaos.",
+    glyphs: "Discrete Spectrum (Spektrum) from the poster. One 4-bar harmonic signature per person for warm–cool, calm–tense, ordered–chaotic, and flat–deep.",
+    weave: "A textile. One thread per person: color runs warm to cool, wave height is tension, irregularity is chaos, thread thickness is depth.",
+    dots: "Seurat field. Position maps warm–cool (horizontal) and flat–deep (vertical); each cluster’s spread is chaos, and dot density is tension.",
+    together: "Radar Manifold. Everyone’s four ratings layered on top of each other. Solid white is the Round 2 class average, dashed white is Round 1, orange is the pixel formula."
   };
   const PC = { bg: "#1A1C20", ink: "#EEF0F2", mute: "#9DA3AC", rule: "#2E3238", blue: [106, 117, 255], sand: [224, 176, 122], mach: "#E5602A" };
   const rgba = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
@@ -1540,11 +2119,11 @@ function sketch(p) {
   const pcv = $("#portraitCv"), pc = pcv.getContext("2d");
 
   function portraitPeople() {
-    const ids = new Set([...live.r1.keys(), ...live.r2.keys()]);   // arrival order
+    const ids = new Set([...live.r1.keys(), ...live.r2.keys()]);
     return [...ids].map(d => ({ v: live.r2.get(d) || live.r1.get(d), v1: live.r1.get(d) || null, v2: live.r2.get(d) || null }));
   }
   const meanOf = (vs) => Object.fromEntries(KEYS.map(k => [k, vs.reduce((s, v) => s + v[k], 0) / vs.length]));
-  function grid(n, x0, y0, size) {           // n cells, as square as possible, centred in a size×size box
+  function grid(n, x0, y0, size) {
     const cols = Math.max(1, Math.ceil(Math.sqrt(n))), rows = Math.max(1, Math.ceil(n / cols)), cell = size / cols;
     return { cell, at: i => [x0 + (i % cols + .5) * cell, y0 + (size - rows * cell) / 2 + (Math.floor(i / cols) + .5) * cell] };
   }
@@ -1563,28 +2142,35 @@ function sketch(p) {
     blooms(c, ps, e) {
       const g = grid(ps.length, 90, 60, 900);
       ps.forEach((p, i) => {
-        const [x, y] = g.at(i), v = p.v, rnd = seeded(i * 7919 + 13), R = g.cell * .5 * (.35 + .65 * v.deep / 100);
-        c.lineWidth = Math.max(1.2, g.cell / 80);
-        for (let k = 0; k < 64; k++) {
-          const a = k / 64 * Math.PI * 2 - Math.PI / 2 + (rnd() * 2 - 1) * v.tense / 100 * .9;
-          const len = R * (1 - v.chaos / 100 * rnd() * .8);
-          if (k >= 64 * e) continue;
-          c.strokeStyle = rgba(k / 64 < v.cool / 100 ? PC.blue : PC.sand, .95);
-          c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * len, y + Math.sin(a) * len); c.stroke();
+        const [x, y] = g.at(i), v = p.v, R = g.cell * .42 * (.4 + .6 * v.deep / 100) * e;
+        const rings = 5;
+        for (let k = 1; k <= rings; k++) {
+          const rk = (R / rings) * k;
+          c.strokeStyle = k / rings <= v.cool / 100 ? rgba(PC.blue, .95) : rgba(PC.sand, .85);
+          c.lineWidth = k === rings ? 2.4 : 1.5;
+          c.beginPath();
+          for (let a = 0; a <= Math.PI * 2 + 0.1; a += 0.2) {
+            const wob = Math.sin(a * (2 + Math.round(v.chaos / 25)) + k + i) * rk * (v.tense / 100) * 0.28;
+            const px = x + Math.cos(a) * (rk + wob), py = y + Math.sin(a) * (rk * 0.86 - wob * 0.5);
+            a === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
+          }
+          c.closePath(); c.stroke();
         }
       });
     },
     glyphs(c, ps, e) {
+      // Discrete Spectrum (Spektrum) bars per person across the 4 axes
       const g = grid(ps.length, 90, 60, 900);
       ps.forEach((p, i) => {
-        const s = Math.max(0, Math.min(1, e * 1.6 - i / Math.max(1, ps.length) * .6)); if (!s) return;
-        const [x, y] = g.at(i), v = p.v, rnd = seeded(i * 104729 + 7), R = g.cell * .3 * (.35 + .65 * v.deep / 100) * s;
-        const rays = Math.round(v.chaos / 100 * 12), amp = v.tense / 100 * .32, spikes = 6 + Math.round(v.tense / 100 * 14);
-        c.strokeStyle = rgba([238, 240, 242], .8); c.lineWidth = Math.max(1.5, g.cell / 70);
-        for (let r = 0; r < rays; r++) { const a = rnd() * Math.PI * 2; c.beginPath(); c.moveTo(x + Math.cos(a) * R * 1.2, y + Math.sin(a) * R * 1.2); c.lineTo(x + Math.cos(a) * R * 1.55, y + Math.sin(a) * R * 1.55); c.stroke(); }
-        c.fillStyle = mixc(v.cool / 100); c.beginPath();
-        for (let j = 0; j <= spikes * 2; j++) { const a = j / (spikes * 2) * Math.PI * 2, rr = R * (1 + (j % 2 ? amp : -amp)); j ? c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr) : c.moveTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
-        c.fill();
+        const [x, y] = g.at(i), v = p.v, w = g.cell * 0.62, bw = Math.max(4, w / 6);
+        c.strokeStyle = PC.rule; c.lineWidth = 1.5;
+        c.beginPath(); c.moveTo(x - w / 2, y); c.lineTo(x + w / 2, y); c.stroke();
+        KEYS.forEach((k, j) => {
+          const bx = x + (j - 1.5) * (bw * 1.45);
+          const h = (v[k] / 100) * (g.cell * 0.38) * e;
+          c.fillStyle = j % 2 === 0 ? rgba(PC.blue, 0.92) : rgba(PC.sand, 0.9);
+          c.fillRect(bx - bw / 2, y - h, bw, h * 2);
+        });
       });
     },
     weave(c, ps, e) {
@@ -1601,7 +2187,7 @@ function sketch(p) {
       const xEnd = X0 + (X1 - X0) * e;
       lines.forEach(L => { c.strokeStyle = L.col; c.lineWidth = L.th; c.lineCap = "round"; c.beginPath(); for (let x = X0; x <= xEnd; x += 4) x === X0 ? c.moveTo(x, L.yAt(x)) : c.lineTo(x, L.yAt(x)); c.stroke(); });
       c.lineCap = "butt";
-      lines.forEach((L, i) => {                // the warp passes over every other crossing
+      lines.forEach((L, i) => {
         for (let j = 0, x = X0; x <= xEnd; j++, x += WX) {
           if ((i + j) % 2) continue;
           const y = L.yAt(x); c.fillStyle = PC.bg; c.fillRect(x - 4, y - L.th / 2 - 3, 8, L.th + 6);
@@ -1626,7 +2212,7 @@ function sketch(p) {
       if (lastM && ps.length) {
         const x = X(lastM.cool), y = Y(lastM.deep);
         c.fillStyle = PC.mach; c.strokeStyle = PC.bg; c.lineWidth = 4; c.beginPath(); c.moveTo(x, y - 16); c.lineTo(x + 16, y); c.lineTo(x, y + 16); c.lineTo(x - 16, y); c.closePath(); c.stroke(); c.fill();
-        c.fillStyle = PC.ink; c.font = font(500, 22); c.textAlign = "left"; c.fillText("machine", x + 24, y + 8);
+        c.fillStyle = PC.ink; c.font = font(500, 22); c.textAlign = "left"; c.fillText("pixels", x + 24, y + 8);
       }
     },
     together(c, ps, e) {
@@ -1660,21 +2246,20 @@ function sketch(p) {
     if (!ps.length) {
       c.fillStyle = "rgba(26,28,32,.82)"; c.fillRect(140, 430, 800, 150);
       c.textAlign = "center"; c.fillStyle = PC.ink; c.font = font(700, 46, "Archivo"); c.fillText("Your answers will be drawn here.", 540, 498);
-      c.fillStyle = PC.mute; c.font = font(400, 22); c.fillText("live from the phones, or pasted on the results slide", 540, 545);
+      c.fillStyle = PC.mute; c.font = font(400, 22); c.fillText("click “Demo data” below to preview with 24 students", 540, 545);
     }
     const date = (edits.date && edits.date !== "[Date]") ? " · " + edits.date : "";
     c.font = font(400, 20); c.fillStyle = PC.mute;
-    c.textAlign = "left"; c.fillText("VA430 / VA530 Art Analysis · Sabancı University" + date, 40, 1046);
+    c.textAlign = "left"; c.fillText("VA430 / VA530 · VAVCD · Sabancı University" + date, 40, 1046);
     c.textAlign = "right"; c.fillText(`${ps.length} ${ps.length === 1 ? "person" : "people"} · ${PNAME[P.mode]}`, 1040, 1046);
     $("#portraitCount").textContent = ps.length ? `${ps.length} ${ps.length === 1 ? "person" : "people"}${live.r2.size ? " · round 2 where given" : ""}` : "no answers yet";
   }
   function animatePortrait() {
     cancelAnimationFrame(P.raf);
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { P.t = 1; drawPortrait(); return; }
     const t0 = performance.now(); P.t = 0;
-    const tick = now => { P.t = Math.min(1, (now - t0) / 1300); drawPortrait(); if (P.t < 1) P.raf = requestAnimationFrame(tick); };
+    const tick = now => { P.t = Math.min(1, (now - t0) / 1100); drawPortrait(); if (P.t < 1) P.raf = requestAnimationFrame(tick); };
     P.raf = requestAnimationFrame(tick);
-    clearTimeout(P.done); P.done = setTimeout(() => { if (P.t < 1) { cancelAnimationFrame(P.raf); P.t = 1; drawPortrait(); } }, 1600);   // if frames stall, still show the final image
+    clearTimeout(P.done); P.done = setTimeout(() => { if (P.t < 1) { cancelAnimationFrame(P.raf); P.t = 1; drawPortrait(); } }, 1400);
   }
   function setPortrait(mode) {
     P.mode = mode;
@@ -1696,7 +2281,6 @@ function sketch(p) {
       step = (step + 1) % PMODES.length; render(false);
     }, 5000);
   });
-  /* PNG export works on the hosted site; inside the Claude artifact downloads are blocked, so the button is hidden there */
   $("#portraitSave").hidden = !LIVE;
   $("#portraitSave").addEventListener("click", () => {
     cancelAnimationFrame(P.raf); P.t = 1; drawPortrait();
@@ -1707,14 +2291,6 @@ function sketch(p) {
       setTimeout(() => URL.revokeObjectURL(u), 4000);
     }, "image/png");
   });
-
-  /* ---------------- 18 · word counts ---------------- */
-  const words = s => (s.trim().match(/\S+/g) || []).length;
-  $("#exCount").textContent = words($("#example").textContent);
-  const mine = $("#mine");
-  try { mine.value = localStorage.getItem("dataart-session-para") || ""; } catch (e) {}
-  const upd = () => { $("#mineCount").textContent = words(mine.value); try { localStorage.setItem("dataart-session-para", mine.value); } catch (e) {} };
-  mine.addEventListener("input", upd); upd();
 
   /* ---------------- files: pick or drop ---------------- */
   function readFile(f, cb) { if (!f.type.startsWith("image/")) return; const fr = new FileReader(); fr.onload = () => cb(fr.result); fr.readAsDataURL(f); }
@@ -1735,10 +2311,16 @@ function sketch(p) {
     const sb = window.supabase.createClient(LIVE.url, LIVE.key, { auth: { persistSession: false } });
     const addRating = r => {
       if (!r || (r.round !== 1 && r.round !== 2)) return;
+      if (live.demoOn && !String(r.device || "").startsWith("stu")) clearDemoData();
       const v = { cool: +r.cool, tense: +r.tense, chaos: +r.chaos, deep: +r.deep };
       (r.round === 1 ? live.r1 : live.r2).set(r.device, v); logRow(r.round, r.device, v); renderLive();
     };
-    const addWord = w => { if (w && w.word) { live.words.set(w.device, String(w.word).slice(0, 40)); renderLive(); } };
+    const addWord = w => {
+      if (w && w.word) {
+        if (live.demoOn && !String(w.device || "").startsWith("stu")) clearDemoData();
+        live.words.set(w.device, String(w.word).slice(0, 40)); renderLive();
+      }
+    };
     (async () => {
       const a = await sb.from("va430_ratings").select("round,device,cool,tense,chaos,deep").eq("session", S);
       (a.data || []).forEach(addRating);
@@ -1756,14 +2338,49 @@ function sketch(p) {
       live.ghosts = g; live.phones = g.length; renderLive();
     });
     room.on("broadcast", { event: "phase" }, ({ payload }) => { if (!live.control && payload && PHASE_NAME[payload.phase]) { live.phase = payload.phase; renderLive(); } });
-    room.subscribe(status => { live.connected = status === "SUBSCRIBED"; renderLive(); });
-    const sendPhase = () => { if (live.control && live.connected) room.send({ type: "broadcast", event: "phase", payload: { phase: live.phase } }).catch(() => {}); };
-    live.setPhase = p => { live.phase = p; sendPhase(); renderLive(); };
-    setInterval(sendPhase, 3000);
-    try { live.control = localStorage.getItem("dataart-live-control") === "1"; } catch (e) {}
+    const sendPhase = (force = false) => {
+      if (live.control && live.connected && (force || (slides[cur] && slides[cur].dataset.phase))) {
+        room.send({ type: "broadcast", event: "phase", payload: { phase: live.phase } }).catch(() => {});
+      }
+    };
+    room.subscribe(status => {
+      live.connected = status === "SUBSCRIBED";
+      if (live.connected && slides[cur] && slides[cur].dataset.phase) {
+        live.phase = slides[cur].dataset.phase;
+        sendPhase(true);
+      }
+      renderLive();
+    });
+    live.setPhase = p => { live.phase = p; sendPhase(true); renderLive(); };
+    setInterval(() => sendPhase(false), 3000);
+    try {
+      const savedCtrl = localStorage.getItem("dataart-live-control");
+      live.control = savedCtrl === null ? true : savedCtrl === "1";
+    } catch (e) { live.control = true; }
     document.addEventListener("click", e => { const w = e.target.closest("#wordwall .w"); if (w && live.control) { live.hidden.add(w.dataset.key); renderLive(); } });
     window.dataArtLive = { addRating, addWord };
     renderLive();
+  }
+  const bResetLive = $("#bResetLive");
+  if (bResetLive) {
+    bResetLive.addEventListener("click", () => {
+      live.demoOn = false;
+      live.pasted = false;
+      live.r1.clear();
+      live.r2.clear();
+      live.words.clear();
+      live.hidden.clear();
+      live.log = [];
+      live.logged.clear();
+      const bDemo = $("#bDemo");
+      if (bDemo) { bDemo.setAttribute("aria-pressed", "false"); bDemo.textContent = "Demo data: OFF"; }
+      if (LIVE && LIVE.session && typeof window.va430ResetLiveSession === "function") {
+        window.va430ResetLiveSession(LIVE.session, live.phase);
+      }
+      if (typeof resetConceptNetFromLive === "function") resetConceptNetFromLive();
+      renderRaw(true);
+      renderLive();
+    });
   }
   /* QR code and short link for the poll */
   if (LIVE && LIVE.pollUrl && window.qrcode) {
@@ -1773,10 +2390,22 @@ function sketch(p) {
     document.querySelectorAll('[data-edit="link"]').forEach(el => { el.textContent = LIVE.pollUrl.replace(/^https?:\/\//, "").replace(/\/$/, ""); el.removeAttribute("contenteditable"); el.classList.remove("ph"); });
   }
 
+  /* Preload 24-student classroom demo data by default in local stub test mode (or click "Demo data" anytime) */
+  if (IS_STUB || !LIVE_ON) {
+    loadDemoData();
+  }
+
   /* ---------------- start ---------------- */
   fit();
   const m = /^#s(\d+)$/.exec(location.hash);
   go(m ? Math.min(slides.length, Math.max(1, +m[1])) - 1 : 0);
+  addEventListener("hashchange", () => {
+    const hm = /^#s(\d+)$/.exec(location.hash);
+    if (hm) {
+      const idx = Math.min(slides.length, Math.max(1, +hm[1])) - 1;
+      if (idx !== cur) go(idx);
+    }
+  });
 })();
 </script>
 

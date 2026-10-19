@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Poster · Art Data &amp; Data Art</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:ital,wdth,wght@0,62..125,300..900;1,62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #141518; color: #EEF0F2; font: 13px "IBM Plex Mono", monospace; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px; min-height: 100vh; box-sizing: border-box; }
+  canvas { height: calc(100vh - 96px); width: auto; aspect-ratio: 1080 / 1350; box-shadow: 0 18px 60px rgba(0, 0, 0, .65); }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .bar i { width: 14px; }
+  button { font: inherit; background: #1E2025; color: #EEF0F2; border: 1px solid #3A3E47; padding: 8px 13px; cursor: pointer; transition: all .15s; }
+  button:hover { border-color: #EEF0F2; }
+  button[aria-pressed="true"] { background: #1F2EFF; border-color: #1F2EFF; color: #FFF; font-weight: 600; }
+  #status { opacity: .8; min-width: 140px; color: #6A75FF; }
+  body.clean { padding: 0; background: #000; overflow: hidden; }
+  body.clean .bar { display: none; }
+  body.clean canvas { height: 1350px; width: 1080px; box-shadow: none; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button data-m="morph" aria-pressed="true">▶ Kusursuz Döngü (12s · 4 Faz + 5s Yazı)</button>
+  <i></i>
+  <button data-m="rings" aria-pressed="false">1 · İzohips</button>
+  <button data-m="bars" aria-pressed="false">2 · Spektrum</button>
+  <button data-m="poly" aria-pressed="false">3 · Radar</button>
+  <button data-m="pipeline" aria-pressed="false">4 · Pipeline (Sabit Yazılı)</button>
+  <button data-m="pure" aria-pressed="false">5 · Saf Dalga</button>
+  <i></i>
+  <button id="png">Save PNG</button>
+  <button id="rec">Record 12s Loop</button>
+  <span id="status"></span>
+</div>
+<div class="bar" style="margin-top:-6px">
+  <span style="opacity:.6">Alt Başlık:</span>
+  <button data-sub="0" aria-pressed="true">Reading art with data · Making art from data</button>
+  <button data-sub="1" aria-pressed="false">From formal analysis to computational practice</button>
+  <button data-sub="2" aria-pressed="false">What computation sees in art — and what it misses</button>
+  <button data-sub="3" aria-pressed="false">Where visual form meets numerical abstraction</button>
+</div>
+<canvas id="cv" width="1080" height="1350"></canvas>
+
+<script>
+(async () => {
+  const W = 1080, H = 1350, T = 12000;
+  const cv = document.getElementById("cv"), c = cv.getContext("2d");
+  const status = s => { document.getElementById("status").textContent = s; };
+
+  const SUBTITLES = [
+    "Reading art with data · Making art from data",
+    "From formal analysis to computational practice",
+    "What computation sees in art — and what it misses",
+    "Where visual form meets numerical abstraction"
+  ];
+
+  const q = new URLSearchParams(location.search);
+  const S = {
+    m: q.get("m") || "morph",
+    g: q.get("g") || "rings",
+    topic: q.get("topic") || "pipelineTech",
+    sub: q.has("sub") ? +q.get("sub") : 0,
+    at: q.has("at") ? +q.get("at") : null,
+    t0: performance.now()
+  };
+  if (q.has("clean")) document.body.classList.add("clean");
+
+  await document.fonts.ready.catch(() => {});
+
+  function mkRng(seed = 430) {
+    let s = seed;
+    return () => (s = (s * 16807) % 2147483647) / 2147483647;
+  }
+
+  // Load Seurat image for pixel sampling + official Sabancı University & VAVCD logos
+  const loadImg = (src) => new Promise((res) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => res(null);
+    i.src = src;
+  });
+  const [im, suLogo, vavcdLogo] = await Promise.all([
+    loadImg("../img/seurat.jpg"),
+    loadImg("./SSBF-logo-white.png"),
+    loadImg("./logo.png")
+  ]);
+
+  // Prepare offscreen buffers
+  // 1) Giant Type Mask for Direction A ("ART / DATA / & / DATA / ART")
+  const TW = 216, TH = 270; // 5px per cell grid
+  const typeBuf = document.createElement("canvas");
+  typeBuf.width = TW; typeBuf.height = TH;
+  const tc = typeBuf.getContext("2d", { willReadFrequently: true });
+  tc.fillStyle = "#000";
+  tc.fillRect(0, 0, TW, TH);
+  tc.fillStyle = "#FFF";
+  tc.textAlign = "left";
+  tc.textBaseline = "alphabetic";
+  tc.font = '900 58px "Archivo Black", sans-serif';
+  tc.fillText("ART", 10, 62);
+  tc.fillText("DATA", 10, 118);
+  tc.fillStyle = "#888"; // mark the ampersand/symbol zone
+  tc.fillText("&", 154, 62);
+  tc.fillStyle = "#FFF";
+  tc.fillText("DATA", 10, 178);
+  tc.fillText("ART", 10, 234);
+  const typeData = tc.getImageData(0, 0, TW, TH).data;
+
+  // 2) Seurat high-res crop & sampling grid for Direction B
+  const SW = 216, SH = 270;
+  const sBuf = document.createElement("canvas");
+  sBuf.width = SW; sBuf.height = SH;
+  const sc = sBuf.getContext("2d", { willReadFrequently: true });
+  let sData = null;
+  if (im) {
+    // Focus tight on the iconic woman with the parasol & monkey on the right half of Seurat's canvas
+    const sx = im.width * 0.52, sy = im.height * 0.08, sw = im.width * 0.44, sh = im.height * 0.78;
+    sc.drawImage(im, sx, sy, sw, sh, 0, 0, SW, SH);
+    sData = sc.getImageData(0, 0, SW, SH).data;
+  }
+
+  // =========================================================================
+  // DIRECTION A · TYPE IS DATA
+  // No separate chart box. The monumental typography fills the entire canvas,
+  // woven from live modulated scanlines, vector spikes, and drifting particles.
+  // =========================================================================
+  function drawA(t) {
+    c.fillStyle = "#090A0D";
+    c.fillRect(0, 0, W, H);
+
+    const M = 56;
+    const breath = (Math.sin(t * Math.PI * 2 - Math.PI / 2) + 1) / 2; // 0..1..0
+
+    // Top minimal header
+    c.font = '500 18px "IBM Plex Mono"';
+    c.fillStyle = "#8E95A2";
+    c.textAlign = "left";
+    c.fillText("VA430 / VA530 · ART ANALYSIS", M, 64);
+    c.textAlign = "right";
+    c.fillText("SABANCI UNIVERSITY", W - M, 64);
+
+    // Draw 118 horizontal signal lines across the whole poster height;
+    // when a line crosses a letter pixel in typeData, it erupts into high-frequency oscillations & color
+    const rows = 126;
+    const topY = 100, spanH = 980;
+    for (let r = 0; r < rows; r++) {
+      const v = r / (rows - 1);
+      const y0 = topY + v * spanH;
+      const ty = Math.min(TH - 1, Math.floor(v * (TH - 18)));
+
+      c.beginPath();
+      let prevIn = false;
+      for (let x = M; x <= W - M; x += 4) {
+        const u = (x - M) / (W - 2 * M);
+        const tx = Math.min(TW - 1, Math.floor(u * (TW - 16)) + 8);
+        const pIdx = (ty * TW + tx) * 4;
+        const val = typeData[pIdx]; // 0 = empty, 255 = letter, 136 = '&'
+
+        // Ambient carrier wave vs. letterform signal spike
+        const carrier = Math.sin(x * 0.025 + t * Math.PI * 4 + r * 0.35) * 1.6;
+        if (val > 50) {
+          const isAmp = val < 200;
+          const freq = isAmp ? 0.24 : 0.18;
+          const phase = t * Math.PI * 2 * (isAmp ? -3 : 2) + r * 0.7;
+          // At breath peak, letters partially dissolve into horizontal data drift
+          const drift = Math.sin(r * 1.9 + t * Math.PI * 2) * breath * 14;
+          const spike = Math.sin((x + drift) * freq + phase) * (11 - breath * 4.5);
+          const y = y0 + spike;
+          if (x === M) c.moveTo(x, y); else c.lineTo(x, y);
+          prevIn = true;
+        } else {
+          const y = y0 + carrier;
+          if (x === M) c.moveTo(x, y); else c.lineTo(x, y);
+        }
+      }
+      c.strokeStyle = "rgba(238, 240, 242, 0.22)";
+      c.lineWidth = 1.1;
+      c.stroke();
+
+      // Overlay crisp colored data segments strictly inside the letterforms
+      for (let x = M; x <= W - M; x += 6) {
+        const u = (x - M) / (W - 2 * M);
+        const tx = Math.min(TW - 1, Math.floor(u * (TW - 16)) + 8);
+        const val = typeData[(ty * TW + tx) * 4];
+        if (val > 50) {
+          const isAmp = val < 200;
+          const wave = Math.sin(x * 0.16 + t * Math.PI * 4 + r * 0.5);
+          const h = (3.5 + Math.abs(wave) * 9.5) * (1 - breath * 0.25);
+          const shiftX = Math.pow(breath, 2) * Math.sin(r * 0.4 + x * 0.01) * 28;
+          c.fillStyle = isAmp ? "#E8541E" : (wave > 0.35 ? "#2B3BFF" : "#EEF0F2");
+          c.fillRect(x + shiftX, y0 - h / 2, 3.2, h);
+        }
+      }
+    }
+
+    // Minimalist question & clean footer
+    c.font = '400 21px "IBM Plex Mono"';
+    c.fillStyle = "#9DA3AC";
+    c.textAlign = "left";
+    c.fillText("How does an artwork become data — and what do the numbers leave out?", M, 1138);
+
+    c.fillStyle = "rgba(238, 240, 242, 0.25)";
+    c.fillRect(M, 1178, W - 2 * M, 1.5);
+
+    c.font = '700 32px "Archivo"';
+    c.fillStyle = "#EEF0F2";
+    c.textAlign = "left";
+    c.fillText("Tue 20 Oct · 09:40–10:30", M, 1234);
+    c.font = '500 22px "IBM Plex Mono"';
+    c.fillStyle = "#6A75FF";
+    c.fillText("SUSAM G010 · Open session", M, 1274);
+
+    c.textAlign = "right";
+    c.font = '700 32px "Archivo"';
+    c.fillStyle = "#EEF0F2";
+    c.fillText("Furkan Çağlar", W - M, 1234);
+  }
+
+  // =========================================================================
+  // DIRECTION B · SINGLE MONOLITH + COLLIDING TYPOGRAPHY
+  // One dramatic full-bleed figure translated in real time into radial/contour
+  // vectors, with monumental typography slicing right through the figure.
+  // =========================================================================
+  function drawB(t) {
+    c.fillStyle = "#0B0C10";
+    c.fillRect(0, 0, W, H);
+    const M = 56;
+    const phase = (Math.sin(t * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+
+    // 1. Giant central monolith: Seurat's parasol silhouette rendered as high-density
+    // horizontal luminance ribbons that lift in 3D relief across the entire canvas
+    if (sData) {
+      const ribbons = 140;
+      const top = 104, bot = 1150;
+      for (let r = 0; r < ribbons; r++) {
+        const v = r / (ribbons - 1);
+        const sy = Math.min(SH - 1, Math.floor(v * SH));
+        const baseY = top + v * (bot - top);
+
+        c.beginPath();
+        for (let x = M; x <= W - M; x += 5) {
+          const u = (x - M) / (W - 2 * M);
+          const sx = Math.min(SW - 1, Math.floor(u * SW));
+          const idx = (sy * SW + sx) * 4;
+          const R = sData[idx], G = sData[idx + 1], B = sData[idx + 2];
+          const lum = (0.2126 * R + 0.7152 * G + 0.0722 * B) / 255;
+
+          // Darker silhouette figures rise dramatically as sculpted ridges
+          const darkness = Math.max(0, 1 - lum * 1.15);
+          const osc = Math.sin(x * 0.09 + t * Math.PI * 4 + r * 0.3) * (darkness * 16 * (0.4 + phase * 0.6));
+          const lift = -Math.pow(darkness, 1.65) * 64 + osc;
+          const y = baseY + lift;
+          if (x === M) c.moveTo(x, y); else c.lineTo(x, y);
+        }
+
+        // Color code by vertical zone & luminance
+        const isAccent = (r % 8 === 0);
+        const isOrange = (r % 21 === 0);
+        c.strokeStyle = isOrange ? "#E8541E" : (isAccent ? "#3B4BFF" : "rgba(230, 234, 242, 0.52)");
+        c.lineWidth = isOrange || isAccent ? 2.3 : 1.3;
+        c.stroke();
+      }
+    }
+
+    // 2. Monumental Typography colliding across the middle/lower torso of the figure
+    // Using knockout & high-contrast overlapping layers
+    c.save();
+    c.textAlign = "left";
+    c.textBaseline = "alphabetic";
+
+    // Header
+    c.font = '500 18px "IBM Plex Mono"';
+    c.fillStyle = "#9DA3AC";
+    c.fillText("VA430 / VA530 · ART ANALYSIS", M, 62);
+    c.textAlign = "right";
+    c.fillText("SABANCI UNIVERSITY", W - M, 62);
+
+    // Big intersecting title blocks right over the artwork
+    c.textAlign = "left";
+    c.font = '900 182px "Archivo Black", sans-serif';
+
+    // "ART" at top-left overlapping the figure's head/parasol
+    c.fillStyle = "#EEF0F2";
+    c.fillText("ART", M - 6, 264);
+
+    // "DATA" offset right in electric blue
+    c.fillStyle = "#293BFF";
+    c.fillText("DATA", 330, 430);
+
+    // "&" giant orange intervention in the center
+    c.font = '900 160px "Archivo Black", sans-serif';
+    c.fillStyle = "#E8541E";
+    c.fillText("&", M, 690);
+
+    // "DATA ART" anchored heavy at the bottom of the monolith
+    c.font = '900 182px "Archivo Black", sans-serif';
+    c.fillStyle = "#EEF0F2";
+    c.fillText("DATA", M - 6, 875);
+    c.fillText("ART", M - 6, 1045);
+
+    // Question line
+    c.font = '400 21px "IBM Plex Mono"';
+    c.fillStyle = "#EEF0F2";
+    c.fillText("How does an artwork become data — and what do the numbers leave out?", M, 1126);
+
+    // Clean minimal footer
+    c.fillStyle = "rgba(238, 240, 242, 0.35)";
+    c.fillRect(M, 1168, W - 2 * M, 1.5);
+
+    c.fillStyle = "#EEF0F2";
+    c.font = '700 32px "Archivo"';
+    c.fillText("Tue 20 Oct · 09:40–10:30", M, 1226);
+    c.font = '500 22px "IBM Plex Mono"';
+    c.fillStyle = "#6A75FF";
+    c.fillText("SUSAM G010 · Open session", M, 1266);
+
+    c.textAlign = "right";
+    c.font = '700 32px "Archivo"';
+    c.fillStyle = "#EEF0F2";
+    c.fillText("Furkan Çağlar", W - M, 1226);
+    c.restore();
+  }
+
+  // =========================================================================
+  // DIRECTION C · SWISS / VERA MOLNÁR CONSTRUCTIVIST MINIMAL
+  // Warm museum paper (#ECEAE4), zero sci-fi clutter, bold asymmetric Swiss
+  // typography, and one hypnotic geometric order-to-entropy field.
+  // =========================================================================
+  function drawC(t) {
+    const BG = "#EAE7DF", INK = "#111215", BLUE = "#1B2BFF", ORANGE = "#E84E1B", MUTE = "#5A5D64";
+    c.fillStyle = BG;
+    c.fillRect(0, 0, W, H);
+
+    const M = 64;
+    const phase = (Math.sin(t * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+
+    // 1. Asymmetric Swiss Grid Header
+    c.fillStyle = INK;
+    c.fillRect(M, 56, W - 2 * M, 3);
+
+    c.font = '600 18px "IBM Plex Mono"';
+    c.fillStyle = INK;
+    c.textAlign = "left";
+    c.fillText("VA430 / VA530", M, 94);
+    c.fillText("Art Analysis", M, 118);
+
+    c.textAlign = "left";
+    c.fillText("Tue 20 October · 09:40–10:30", 360, 94);
+    c.fillStyle = MUTE;
+    c.fillText("SUSAM G010 · Sabancı University", 360, 118);
+
+    c.textAlign = "right";
+    c.fillStyle = INK;
+    c.fillText("Furkan Çağlar", W - M, 94);
+    c.fillStyle = BLUE;
+    c.fillText("Open session", W - M, 118);
+
+    // 2. Single Strong Visual Gesture (Vera Molnár "Interruptions" meets Typography)
+    // A 12x12 constructivist field where strict geometric order progressively fractures
+    // along a diagonal wave into expressive cobalt/vermilion brush vectors.
+    const GX = M, GY = 166, GW_BOX = W - 2 * M, GH_BOX = 740;
+    const cols = 15, rows = 12;
+    const cw = GW_BOX / cols, ch = GH_BOX / rows;
+    const rng = mkRng(1924);
+
+    c.save();
+    c.lineCap = "square";
+    for (let r = 0; r < rows; r++) {
+      for (let col = 0; col < cols; col++) {
+        const u = col / (cols - 1), v = r / (rows - 1);
+        const cx = GX + (col + 0.5) * cw;
+        const cy = GY + (r + 0.5) * ch;
+
+        // Entropy increases from top-left (strict order = 0) to bottom-right (data/art chaos = 1)
+        const diag = (u * 0.65 + v * 0.55);
+        const entropy = Math.max(0, Math.min(1, (diag - 0.18) * (1.1 + phase * 0.45)));
+
+        const baseAngle = 0; // strict horizontal datum
+        const jitterAngle = (rng() - 0.5) * Math.PI * 1.8 + Math.sin(t * Math.PI * 2 + col * 0.5 + r * 0.4) * 1.2;
+        const angle = baseAngle * (1 - entropy) + jitterAngle * entropy;
+
+        // Multiple overlapping strokes per cell as entropy grows
+        const count = entropy > 0.55 ? 3 : (entropy > 0.2 ? 2 : 1);
+        for (let k = 0; k < count; k++) {
+          const a = angle + k * 0.38 * entropy;
+          const len = cw * (0.76 + entropy * 0.52);
+          const ox = (rng() - 0.5) * entropy * 18;
+          const oy = (rng() - 0.5) * entropy * 18;
+
+          if (entropy > 0.72 && k === count - 1) {
+            c.strokeStyle = (col + r) % 4 === 0 ? ORANGE : BLUE;
+            c.lineWidth = 6.5;
+          } else if (entropy > 0.35 && k === 1) {
+            c.strokeStyle = BLUE;
+            c.lineWidth = 4.5;
+          } else {
+            c.strokeStyle = INK;
+            c.lineWidth = 5 - entropy * 1.5;
+          }
+
+          c.beginPath();
+          c.moveTo(cx + ox - Math.cos(a) * len / 2, cy + oy - Math.sin(a) * len / 2);
+          c.lineTo(cx + ox + Math.cos(a) * len / 2, cy + oy + Math.sin(a) * len / 2);
+          c.stroke();
+        }
+      }
+    }
+    c.restore();
+
+    // 3. Monumental Swiss Typography anchored at bottom-left, overlapping the bottom of the field
+    c.fillStyle = INK;
+    c.textAlign = "left";
+    c.textBaseline = "alphabetic";
+    c.font = '900 172px "Archivo Black", sans-serif';
+    c.fillText("Art Data", M - 6, 1054);
+
+    c.fillStyle = BLUE;
+    c.fillText("&", M - 6, 1218);
+    c.fillStyle = INK;
+    c.fillText("Data Art", M + 148, 1218);
+
+    c.fillStyle = INK;
+    c.fillRect(M, 1252, W - 2 * M, 3);
+    c.font = '500 20.5px "IBM Plex Mono"';
+    c.fillStyle = MUTE;
+    c.fillText("How does an artwork become data — and what do the numbers leave out?", M, 1294);
+  }
+
+  // =========================================================================
+  // DIRECTION D · PREVIOUS #2 (FORMAL TOPOGRAPHY KEPT AS FALLBACK)
+  // =========================================================================
+  // Format: [stepCode, title, yHeight(0..100), radiusWeight(0..100), coolRatio(0..1), subtitle, labelBelow(bool)]
+  const TOPICS = {
+    pipeline: {
+      tag: "ABSTRACTION PIPELINE · FROM PHYSICAL WORK TO DATA ART",
+      nodes: [
+        ["01", "PIGMENT",       28, 64, 0.15, "PHYSICAL MATTER", false],
+        ["02", "PIXEL GRID",    68, 74, 0.35, "RGB SAMPLING",    false],
+        ["03", "PALETTE",       34, 68, 0.55, "COLOR CLUSTERS",  true],
+        ["04", "GEOMETRY",      84, 84, 0.25, "EDGES & TENSION", false],
+        ["05", "VECTOR",        42, 78, 0.85, "EMBEDDING SPACE", true],
+        ["06", "ARCHIVE",       88, 74, 0.65, "DISTANT READING", false],
+        ["07", "GENERATIVE",    36, 90, 0.95, "DATA AS MEDIUM",  true],
+        ["08", "MEANING",       78, 86, 0.40, "WHAT STAYS OUT",  false]
+      ]
+    },
+    pipeline6: {
+      tag: "SIGNAL TOPOGRAPHY · SIX STAGES OF QUANTIFICATION",
+      nodes: [
+        ["01", "ARTWORK",       28, 80, 0.15, "PHYSICAL SURFACE", false],
+        ["02", "DISCRETIZE",    74, 86, 0.35, "PIXEL & PALETTE",  false],
+        ["03", "MEASURE",       36, 82, 0.55, "FORM & GEOMETRY",  true],
+        ["04", "EMBED",         86, 94, 0.85, "FEATURE VECTOR",   false],
+        ["05", "SYNTHESIZE",    40, 90, 0.95, "GENERATIVE ART",   true],
+        ["06", "INTERPRET",     80, 88, 0.30, "RESIDUAL MEANING", false]
+      ]
+    },
+    pipelineTech: {
+      tag: "COMPUTATIONAL FORMALISM · SIGNAL EXTRACTION PIPELINE",
+      nodes: [
+        ["01", "RAW CANVAS",    28, 62, 0.15, "CONTINUOUS",      false],
+        ["02", "RGB MATRIX",    66, 74, 0.30, "I(x,y) ∈ ℝ³",     false],
+        ["03", "LUMINANCE",     34, 70, 0.25, "Y = 0.21R+0.72G", true],
+        ["04", "GRADIENT",      84, 82, 0.45, "EDGE FIELD ∇I",   false],
+        ["05", "K-MEANS",       42, 76, 0.65, "PALETTE CLUSTERS", true],
+        ["06", "TOPOLOGY",      88, 80, 0.50, "SPATIAL GRAPH",   false],
+        ["07", "LATENT z",      36, 92, 0.95, "MANIFOLD ℝ^512",  true],
+        ["08", "RESIDUE",       78, 84, 0.35, "UNQUANTIFIED",    false]
+      ]
+    },
+    formal: {
+      tag: "COMPUTATIONAL FORMALISM · ENTROPY (E) × TENSION (T)",
+      nodes: [
+        ["1503", "DA VINCI",    34, 62, 0.25, "E:34 T:62", false],
+        ["1600", "CARAVAGGIO",  56, 86, 0.15, "E:41 T:94", true],
+        ["1656", "VELÁZQUEZ",   40, 72, 0.35, "E:48 T:76", false],
+        ["1844", "TURNER",      78, 68, 0.20, "E:78 T:68", false],
+        ["1884", "SEURAT",      52, 64, 0.55, "E:86 T:54", true],
+        ["1907", "PICASSO",     84, 86, 0.30, "E:82 T:88", false],
+        ["1915", "MALEVICH",    24, 90, 0.85, "E:14 T:96", true],
+        ["1950", "POLLOCK",     92, 90, 0.45, "E:98 T:91", false],
+        ["1960", "KLEIN (IKB)", 30, 82, 1.00, "E:19 T:84", true],
+        ["2022", "GAN LATENT",  82, 79, 0.75, "E:92 T:79", false]
+      ]
+    }
+  };
+
+  function drawNodeGlyph(cx, cy, rad, cool, t, i, rng2, overrideGlyph = null, alpha = 1) {
+    const g = overrideGlyph || S.g;
+    c.save();
+    if (alpha < 1) c.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+    if (g === "rings") {
+      // 1. Topographic Contour Rings (İzohips) + Precision Crosshair
+      const rings = 5;
+      for (let r = 1; r <= rings; r++) {
+        const rr = rad * (0.22 + (r / rings) * 0.84);
+        c.beginPath();
+        const steps = 48;
+        for (let s = 0; s <= steps; s++) {
+          const a = (s / steps) * Math.PI * 2;
+          const wobble = Math.sin(a * 3 + t * Math.PI * 2 * (i % 2 ? 1 : -1) + r * 0.9 + i) * (rr * 0.15)
+                       + Math.cos(a * 2 - t * Math.PI * 2 + i * 1.3) * (rr * 0.09);
+          const px = cx + Math.cos(a) * (rr + wobble);
+          const py = cy + Math.sin(a) * (rr + wobble) * 0.76;
+          if (s === 0) c.moveTo(px, py); else c.lineTo(px, py);
+        }
+        c.closePath();
+        if (r === 1) {
+          c.fillStyle = cool < 0.45 ? "rgba(232,84,30,0.16)" : "rgba(74,92,255,0.18)";
+          c.fill();
+        }
+        if (r === 2) {
+          c.strokeStyle = cool < 0.45 ? "#E8541E" : "#4A5CFF";
+          c.lineWidth = 2.5;
+        } else if (r === 4) {
+          c.strokeStyle = cool < 0.45 ? "rgba(74,92,255,0.85)" : "rgba(232,84,30,0.85)";
+          c.lineWidth = 1.7;
+        } else {
+          c.strokeStyle = `rgba(238,240,242,${(0.62 - r * 0.08).toFixed(2)})`;
+          c.lineWidth = 1.25;
+        }
+        c.stroke();
+      }
+      // Subtle axis ticks
+      c.strokeStyle = "rgba(238,240,242,0.55)";
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.moveTo(cx - rad * 1.12, cy); c.lineTo(cx + rad * 1.12, cy);
+      c.moveTo(cx, cy - rad * 0.88); c.lineTo(cx, cy + rad * 0.88);
+      c.stroke();
+      c.fillStyle = "#EEF0F2";
+      c.beginPath(); c.arc(cx, cy, 4.8, 0, Math.PI * 2); c.fill();
+
+    } else if (g === "poly") {
+      // 2. Wireframe Radar / Phase Polygon (Geometrik Kafes)
+      const sides = 6;
+      const rot = t * Math.PI * 2 * (i % 2 ? 0.25 : -0.25) + i * 0.5;
+      const pts = [];
+      for (let k = 0; k < sides; k++) {
+        const a = rot + (k / sides) * Math.PI * 2;
+        const rLen = rad * (0.45 + 0.55 * (0.5 + 0.5 * Math.sin(k * 2.1 + i * 1.7 + t * Math.PI * 2)));
+        pts.push([cx + Math.cos(a) * rLen, cy + Math.sin(a) * rLen]);
+      }
+      c.beginPath();
+      pts.forEach(([px, py], idx) => idx === 0 ? c.moveTo(px, py) : c.lineTo(px, py));
+      c.closePath();
+      c.fillStyle = cool < 0.4 ? "rgba(232,84,30,0.16)" : "rgba(74,92,255,0.18)";
+      c.fill();
+      c.strokeStyle = cool < 0.4 ? "#E8541E" : "#4A5CFF";
+      c.lineWidth = 2.2;
+      c.stroke();
+
+      c.strokeStyle = "rgba(238,240,242,0.28)";
+      c.lineWidth = 1;
+      c.beginPath(); c.arc(cx, cy, rad * 0.85, 0, Math.PI * 2); c.stroke();
+      pts.forEach(([px, py]) => {
+        c.beginPath(); c.moveTo(cx, cy); c.lineTo(px, py); c.stroke();
+        c.fillStyle = "#EEF0F2";
+        c.fillRect(px - 2.5, py - 2.5, 5, 5);
+      });
+      c.fillStyle = "#EEF0F2";
+      c.beginPath(); c.arc(cx, cy, 4, 0, Math.PI * 2); c.fill();
+
+    } else if (g === "bars") {
+      // 3. Spectral Barcode / Frequency Slice
+      const count = 13;
+      const span = rad * 1.55;
+      c.strokeStyle = "rgba(238,240,242,0.35)";
+      c.lineWidth = 1;
+      c.beginPath(); c.moveTo(cx - span / 2 - 8, cy); c.lineTo(cx + span / 2 + 8, cy); c.stroke();
+      for (let k = 0; k < count; k++) {
+        const u = (k / (count - 1)) - 0.5;
+        const bx = cx + u * span;
+        const env = Math.cos(u * Math.PI);
+        const h = rad * env * (0.35 + 0.65 * Math.abs(Math.sin(k * 1.4 + i + t * Math.PI * 2)));
+        c.strokeStyle = Math.abs(u) < 0.18 ? "#EEF0F2" : (k % 2 === 0 ? "#4A5CFF" : "#E8541E");
+        c.lineWidth = Math.abs(u) < 0.18 ? 3 : 2.2;
+        c.beginPath(); c.moveTo(bx, cy - h); c.lineTo(bx, cy + h * 0.65); c.stroke();
+      }
+    } else {
+      // 4. Classic Starburst (Bloom)
+      for (let k = 0; k < 48; k++) {
+        const a = (k / 48) * Math.PI * 2 + t * Math.PI * 2 * (i % 2 ? 0.5 : -0.5);
+        const ratio = k / 48, rLen = rad * (0.4 + 0.75 * rng2());
+        c.strokeStyle = ratio < (1 - cool) * 0.55 ? "#E8541E" : (ratio < 0.78 ? "#4A5CFF" : "rgba(238,240,242,0.55)");
+        c.lineWidth = ratio < 0.78 ? 2 : 1.1;
+        c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(a) * rLen, cy + Math.sin(a) * rLen); c.stroke();
+      }
+      c.fillStyle = "#EEF0F2";
+      c.beginPath(); c.arc(cx, cy, 4.5, 0, Math.PI * 2); c.fill();
+    }
+    c.restore();
+  }
+
+  function drawWeave(t) {
+    c.fillStyle = "#08090C";
+    c.fillRect(0, 0, W, H);
+    const M = 54;
+    const mode = S.m || "morph";
+    const activeTopic = TOPICS[S.topic] || TOPICS.pipelineTech;
+    const DATA = activeTopic.nodes;
+
+    // Multi-phase timeline over T = 12s
+    let g1 = "rings", g2 = null, blend = 1;
+    let showBoxes = false, boxAlpha = 0;
+    let showTrajectory = false, trajAlpha = 0;
+    let currentTag = "";
+
+    if (mode === "morph") {
+      // Phase 1 (0.00 .. 0.20): 0s - 2.4s: Rings (Clean)
+      // Phase 2 (0.20 .. 0.40): 2.4s - 4.8s: Bars (Spectrum)
+      // Phase 3 (0.40 .. 0.60): 4.8s - 7.2s: Poly (Radar)
+      // Phase 4 (0.60 .. 1.00): 7.2s - 12.0s: Synthesis & Full Labels (4.8s visible!)
+      if (t < 0.20) {
+        g1 = "rings";
+        showTrajectory = false;
+        currentTag = "[PHASE 1/4] TOPOGRAPHIC ISOLINES · CONTINUOUS ∇I FIELD";
+        if (t >= 0.17) {
+          g2 = "bars";
+          blend = (0.20 - t) / 0.03;
+        }
+      } else if (t < 0.40) {
+        g1 = "bars";
+        showTrajectory = true;
+        trajAlpha = Math.min(1, (t - 0.20) / 0.03);
+        currentTag = "[PHASE 2/4] DISCRETE FREQUENCY SPECTRUM · HARMONICS";
+        if (t >= 0.37) {
+          g2 = "poly";
+          blend = (0.40 - t) / 0.03;
+        }
+      } else if (t < 0.60) {
+        g1 = "poly";
+        showTrajectory = true;
+        trajAlpha = 1;
+        currentTag = "[PHASE 3/4] PHASE SPACE MANIFOLD · GEOMETRIC ENVELOPE";
+        if (t >= 0.57) {
+          g2 = "rings";
+          blend = (0.60 - t) / 0.03;
+        }
+      } else {
+        // Phase 4: Full Pipeline Labels on screen for 4.8 full seconds!
+        g1 = "rings";
+        showTrajectory = true;
+        showBoxes = true;
+        currentTag = "[PHASE 4/4] SYNTHESIS · SIGNAL EXTRACTION PIPELINE";
+
+        // Fade-in at 0.60..0.64 (0.5s)
+        // Solid visible from 0.64 to 0.94 (3.6s solid!)
+        // Smooth dissolve back to Phase 1 at 0.94..1.00
+        if (t < 0.64) {
+          boxAlpha = (t - 0.60) / 0.04;
+          trajAlpha = 1;
+        } else if (t < 0.94) {
+          boxAlpha = 1;
+          trajAlpha = 1;
+        } else {
+          const fade = Math.max(0, (1.00 - t) / 0.06);
+          boxAlpha = fade;
+          trajAlpha = fade;
+          if (t >= 0.97) {
+            currentTag = "[PHASE 1/4] TOPOGRAPHIC ISOLINES · CONTINUOUS ∇I FIELD";
+          }
+        }
+      }
+    } else if (mode === "rings") {
+      g1 = "rings";
+      showBoxes = false;
+      showTrajectory = false;
+      currentTag = "TOPOGRAPHIC ISOLINES · CONTINUOUS CONTOURS";
+    } else if (mode === "bars") {
+      g1 = "bars";
+      showBoxes = false;
+      showTrajectory = true;
+      trajAlpha = 1;
+      currentTag = "DISCRETE FREQUENCY SPECTRUM · HARMONIC SLICES";
+    } else if (mode === "poly") {
+      g1 = "poly";
+      showBoxes = false;
+      showTrajectory = true;
+      trajAlpha = 1;
+      currentTag = "PHASE SPACE MANIFOLD · GEOMETRIC ENVELOPE";
+    } else if (mode === "pipeline") {
+      g1 = "rings";
+      showBoxes = true;
+      boxAlpha = 1;
+      showTrajectory = true;
+      trajAlpha = 1;
+      currentTag = activeTopic.tag;
+    } else if (mode === "pure") {
+      g1 = null;
+      showBoxes = false;
+      showTrajectory = false;
+      currentTag = "";
+    }
+
+    // 1. Subtle vertical grid hairlines
+    if (mode !== "pure") {
+      DATA.forEach(([yr], i) => {
+        const gx = 96 + (i / (DATA.length - 1)) * (W - 192);
+        c.strokeStyle = "rgba(255,255,255,0.05)";
+        c.lineWidth = 1;
+        c.beginPath(); c.moveTo(gx, 118); c.lineTo(gx, 792); c.stroke();
+      });
+    }
+
+    // 2. 72-strand generative topographic wave field
+    const strands = 72;
+    for (let s = 0; s < strands; s++) {
+      const u = s / (strands - 1);
+      const baseY = 95 + u * 840;
+      const isHighlight = s % 7 === 0, isWarm = s % 13 === 0;
+      c.beginPath();
+      for (let x = 0; x <= W; x += 12) {
+        const nx = x / W, decF = nx * (DATA.length - 1);
+        const i0 = Math.floor(decF), i1 = Math.min(DATA.length - 1, i0 + 1);
+        const frac = decF - i0, sfrac = frac * frac * (3 - 2 * frac);
+        const chaos = DATA[i0][2] * (1 - sfrac) + DATA[i1][2] * sfrac;
+        const tense = DATA[i0][3] * (1 - sfrac) + DATA[i1][3] * sfrac;
+        const amp = chaos * 0.78 + tense * 0.36;
+        const y = baseY
+          + Math.sin(nx * 9 + t * Math.PI * 2 + u * 5.2) * amp * 0.55
+          + Math.cos(nx * 17 - t * Math.PI * 4 + s * 0.27) * (amp * 0.28);
+        if (x === 0) c.moveTo(x, y); else c.lineTo(x, y);
+      }
+      c.strokeStyle = isWarm
+        ? "rgba(232,84,30,0.88)"
+        : (isHighlight ? "rgba(74,92,255,0.92)" : `rgba(145,160,255,${(0.14 + Math.sin(u * Math.PI) * 0.35).toFixed(3)})`);
+      c.lineWidth = isWarm ? 2.6 : (isHighlight ? 2.2 : 1.1);
+      c.stroke();
+    }
+
+    // Precompute node coordinates
+    const coords = DATA.map(([yr, label, chaos, tense, cool, sub, below], i) => {
+      const cx = 96 + (i / (DATA.length - 1)) * (W - 192);
+      const cy = 610 - (chaos / 100) * 350 + Math.sin(t * Math.PI * 2 + i * 0.7) * 22;
+      const rad = 28 + (tense / 100) * 52;
+      return { yr, label, chaos, tense, cool, sub, below, cx, cy, rad, i };
+    });
+
+    // Connected geodesic signal trajectory
+    if (showTrajectory && trajAlpha > 0.01) {
+      c.save();
+      c.globalAlpha = trajAlpha;
+      c.setLineDash([6, 6]);
+      c.lineDashOffset = -t * 96;
+      c.strokeStyle = "rgba(238,240,242,0.36)";
+      c.lineWidth = 1.6;
+      c.beginPath();
+      coords.forEach(({ cx, cy }, i) => {
+        if (i === 0) c.moveTo(cx, cy);
+        else {
+          const prev = coords[i - 1];
+          const mx = (prev.cx + cx) / 2;
+          c.bezierCurveTo(mx, prev.cy, mx, cy, cx, cy);
+        }
+      });
+      c.stroke();
+
+      // Traveling signal pulse (loops exactly across the 7 segments)
+      const pulseIdx = (t * 7) % 7;
+      const p0 = Math.floor(pulseIdx), pFrac = pulseIdx - p0;
+      const pPrev = coords[p0], pNext = coords[Math.min(coords.length - 1, p0 + 1)];
+      const px = pPrev.cx + (pNext.cx - pPrev.cx) * pFrac;
+      const py = pPrev.cy + (pNext.cy - pPrev.cy) * pFrac;
+      c.fillStyle = "#FFF";
+      c.beginPath(); c.arc(px, py, 4, 0, Math.PI * 2); c.fill();
+      c.restore();
+    }
+
+    // Draw active glyphs (with smooth crossfade during phase morphs)
+    const rng2 = mkRng(2026);
+    if (g1) {
+      coords.forEach(({ cool, cx, cy, rad, i }) => {
+        if (g2 && blend < 0.99) {
+          drawNodeGlyph(cx, cy, rad, cool, t, i, rng2, g1, blend);
+          drawNodeGlyph(cx, cy, rad, cool, t, i, rng2, g2, 1 - blend);
+        } else {
+          drawNodeGlyph(cx, cy, rad, cool, t, i, rng2, g1, 1);
+        }
+      });
+    }
+
+    // Draw animated callout boxes
+    if (showBoxes && boxAlpha > 0.01) {
+      c.save();
+      c.globalAlpha = boxAlpha;
+      coords.forEach(({ yr, label, cool, sub, below, cx, cy, rad }) => {
+        const dir = below ? 1 : -1;
+        const by = cy + dir * (rad + 36);
+        const bw = Math.max(96, Math.max(label.length + 3, sub.length) * 8.2 + 22);
+        const bx = Math.max(M + bw / 2, Math.min(W - M - bw / 2, cx));
+
+        // Thin leader line
+        c.strokeStyle = "rgba(238,240,242,0.35)";
+        c.lineWidth = 1;
+        c.beginPath();
+        c.moveTo(cx, cy + dir * (rad * 0.78));
+        c.lineTo(cx, by - dir * 18);
+        c.stroke();
+
+        c.fillStyle = "rgba(8,9,12,0.92)";
+        c.strokeStyle = cool < 0.45 ? "rgba(232,84,30,0.55)" : "rgba(74,92,255,0.60)";
+        c.lineWidth = 1.2;
+        c.fillRect(bx - bw / 2, by - 18, bw, 36);
+        c.strokeRect(bx - bw / 2, by - 18, bw, 36);
+
+        c.textAlign = "center";
+        c.font = '600 12.5px "IBM Plex Mono"';
+        c.fillStyle = "#EEF0F2";
+        c.fillText(`${yr}·${label}`, bx, by - 3);
+        c.font = '500 11px "IBM Plex Mono"';
+        c.fillStyle = cool < 0.45 ? "#E8541E" : "#6A7DFF";
+        c.fillText(sub, bx, by + 12);
+      });
+      c.restore();
+    }
+
+    // Top header bar (Course info left + Official Sabancı University / SSBF & VAVCD logos right)
+    c.fillStyle = "rgba(8,9,12,0.88)";
+    c.fillRect(0, 0, W, 104);
+
+    c.font = '700 22px "IBM Plex Mono"';
+    c.fillStyle = "#EEF0F2";
+    c.textAlign = "left";
+    c.fillText("VA430 / VA530 · FALL 2026", M, 44);
+
+    c.font = '500 15.5px "IBM Plex Mono"';
+    c.fillStyle = "#8B93A6";
+    c.textAlign = "left";
+    c.fillText("ART ANALYSIS: THEORY AND CRITICISM", M, 70);
+
+    // Official VAVCD + Sabancı University (FASS/SSBF) logos on top right
+    c.save();
+    c.imageSmoothingEnabled = true;
+    c.imageSmoothingQuality = "high";
+    const vh = 46, vw = Math.round(vh * (83 / 51)); // 75x46
+    const vx = W - M - vw, vy = 25;
+    if (vavcdLogo) {
+      c.drawImage(vavcdLogo, 0, 0, vavcdLogo.width, vavcdLogo.height, vx, vy, vw, vh);
+    }
+    const divX = vx - 18;
+    c.strokeStyle = "rgba(238,240,242,0.24)";
+    c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(divX, 24); c.lineTo(divX, 72); c.stroke();
+
+    const sh = 52, sw = Math.round(sh * (4123 / 789)); // 272x52 (tight crop of SSBF-logo-white.png)
+    const sx = divX - 18 - sw, sy = 22;
+    if (suLogo) {
+      c.drawImage(suLogo, 72, 88, 4123, 789, sx, sy, sw, sh);
+    }
+    c.restore();
+
+    c.strokeStyle = "rgba(238,240,242,0.22)";
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(M, 94); c.lineTo(W - M, 94); c.stroke();
+
+    // Small framing tag below top rule
+    if (currentTag) {
+      c.font = '500 13px "IBM Plex Mono"';
+      c.fillStyle = "rgba(139,147,166,0.80)";
+      c.textAlign = "left";
+      c.fillText(currentTag, M, 118);
+    }
+
+    // Bottom gradient + monumental typography + clean footer
+    const grad = c.createLinearGradient(0, 720, 0, H);
+    grad.addColorStop(0, "rgba(8,9,12,0)");
+    grad.addColorStop(0.22, "rgba(8,9,12,0.90)");
+    grad.addColorStop(1, "rgba(8,9,12,0.99)");
+    c.fillStyle = grad;
+    c.fillRect(0, 720, W, H - 720);
+
+    c.font = '900 142px "Archivo Black", sans-serif';
+    c.fillStyle = "#EEF0F2";
+    c.textAlign = "left";
+    c.fillText("ART DATA", M, 982);
+    c.fillText("DATA ART", M, 1114);
+
+    // Cobalt '&' badge
+    c.fillStyle = "#4A5CFF";
+    c.fillRect(W - M - 148, 868, 148, 128);
+    c.fillStyle = "#FFF";
+    c.textAlign = "center";
+    c.fillText("&", W - M - 74, 980);
+
+    // Cobalt subtitle ribbon
+    c.fillStyle = "#1F2EFF";
+    c.fillRect(M, 1138, W - 2 * M, 48);
+    c.font = '600 22px "IBM Plex Mono"';
+    c.fillStyle = "#FFFFFF";
+    c.textAlign = "left";
+    c.fillText(SUBTITLES[S.sub] || SUBTITLES[0], M + 18, 1170);
+
+    // Divider line
+    c.fillStyle = "#EEF0F2";
+    c.fillRect(M, 1212, W - 2 * M, 2);
+
+    // Clean 3-Column Event Footer (no filler labels)
+    c.textAlign = "left";
+    c.font = '900 36px "Archivo", sans-serif';
+    c.fillStyle = "#EEF0F2";
+    c.fillText("TUE 20 OCT", M, 1264);
+    c.fillText("SUSAM G010", 418, 1264);
+    c.textAlign = "right";
+    c.fillText("Furkan Çağlar", W - M, 1264);
+
+    c.textAlign = "left";
+    c.font = '600 24px "IBM Plex Mono"';
+    c.fillStyle = "#4A5CFF";
+    c.fillText("09:40 – 10:30", M, 1300);
+
+    c.strokeStyle = "rgba(238,240,242,0.18)";
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(388, 1230); c.lineTo(388, 1308); c.stroke();
+    c.beginPath(); c.moveTo(718, 1230); c.lineTo(718, 1308); c.stroke();
+  }
+
+  let recState = { active: false, t0: 0, mr: null };
+
+  function frame(now) {
+    let t;
+    if (recState.active) {
+      const elapsed = now - recState.t0;
+      if (elapsed >= T) {
+        // Draw the exact seamless loop-closing frame (t = 1.0)
+        drawWeave(1.0);
+        recState.mr.stop();
+        recState.active = false;
+        requestAnimationFrame(frame);
+        return;
+      }
+      t = elapsed / T;
+      S.t0 = now - elapsed; // keeps real-time in sync
+    } else {
+      t = S.at != null ? S.at : ((now - S.t0) % T) / T;
+    }
+    drawWeave(t);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  const press = (sel, attr, val) => document.querySelectorAll(sel).forEach(b => b.setAttribute("aria-pressed", String(b.dataset[attr] === String(val))));
+  press("[data-m]", "m", S.m);
+  document.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { S.m = b.dataset.m; press("[data-m]", "m", S.m); });
+  press("[data-sub]", "sub", S.sub);
+  document.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { S.sub = +b.dataset.sub; press("[data-sub]", "sub", S.sub); });
+
+  const download = (blob, name) => {
+    const a = document.createElement("a"), u = URL.createObjectURL(blob);
+    a.href = u; a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(u), 4000);
+  };
+  document.getElementById("png").onclick = () => cv.toBlob(b => download(b, `va430-poster-${S.m}.png`), "image/png");
+
+  document.getElementById("rec").onclick = () => {
+    if (recState.active) return;
+    const types = ["video/mp4;codecs=avc1.640028", "video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"];
+    const type = types.find(t => MediaRecorder.isTypeSupported(t));
+    const mr = new MediaRecorder(cv.captureStream(60), { mimeType: type, videoBitsPerSecond: 18e6 });
+    const chunks = [];
+    mr.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    mr.onstop = () => {
+      const ext = type.startsWith("video/mp4") ? "mp4" : "webm";
+      download(new Blob(chunks, { type }), `va430-poster-${S.m}-12s.${ext}`);
+      status(`saved .${ext}`);
+      recState.active = false;
+    };
+    chunks.length = 0;
+    S.at = null;
+    recState.mr = mr;
+    recState.t0 = performance.now();
+    recState.active = true;
+    mr.start();
+    status(`recording exact 12s loop…`);
+  };
+})();
+</script>
+</body>
+</html>
