@@ -150,8 +150,12 @@
     };
     connectWs();
 
-    // Lightweight Port-443 HTTPS poll every 4.5s as ultimate fallback if campus proxy blocks WebSockets
-    state.pollTimer = setInterval(fetchHistory, 4500);
+    // Gentle fallback poll only if WebSocket is not connected (every 30s) to avoid 429
+    state.pollTimer = setInterval(() => {
+      if (!state.ws || state.ws.readyState !== 1) {
+        fetchHistory();
+      }
+    }, 30000);
   }
 
   function pubNtfy(session, pkt) {

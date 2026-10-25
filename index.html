@@ -1018,32 +1018,106 @@ let userBloomFn = new Function(DEFAULT_BLOOM_CODE);
     document.querySelectorAll(".raw").forEach(el => { el.innerHTML = html; });
   }
 
-  function loadDemoData() {
+  /* Real classroom data recorded live on 20 October 2026 (SUSAM G010, Sabancı University) */
+  const REAL_CLASS_DATA = {
+    ratings: [
+      { round: 1, device: "stu01", cool: 39, tense: 69, chaos: 49, deep: 85 },
+      { round: 1, device: "stu02", cool: 28, tense: 70, chaos: 17, deep: 0 },
+      { round: 1, device: "stu03", cool: 37, tense: 24, chaos: 28, deep: 83 },
+      { round: 1, device: "stu04", cool: 20, tense: 28, chaos: 0, deep: 0 },
+      { round: 1, device: "stu05", cool: 23, tense: 25, chaos: 72, deep: 32 },
+      { round: 1, device: "stu06", cool: 73, tense: 36, chaos: 60, deep: 80 },
+      { round: 1, device: "stu07", cool: 22, tense: 9, chaos: 18, deep: 67 },
+      { round: 1, device: "stu08", cool: 42, tense: 60, chaos: 50, deep: 56 },
+      { round: 1, device: "stu09", cool: 61, tense: 9, chaos: 8, deep: 5 },
+      { round: 1, device: "stu10", cool: 17, tense: 9, chaos: 34, deep: 40 },
+      { round: 1, device: "stu11", cool: 39, tense: 62, chaos: 67, deep: 56 },
+      { round: 1, device: "stu12", cool: 58, tense: 44, chaos: 28, deep: 43 },
+      { round: 2, device: "stu02", cool: 60, tense: 84, chaos: 28, deep: 0 },
+      { round: 2, device: "stu03", cool: 16, tense: 15, chaos: 19, deep: 88 },
+      { round: 2, device: "stu13", cool: 29, tense: 51, chaos: 29, deep: 88 },
+      { round: 2, device: "stu09", cool: 25, tense: 8, chaos: 2, deep: 2 },
+      { round: 2, device: "stu06", cool: 60, tense: 75, chaos: 29, deep: 71 },
+      { round: 2, device: "stu08", cool: 50, tense: 50, chaos: 50, deep: 50 },
+      { round: 2, device: "stu14", cool: 81, tense: 84, chaos: 71, deep: 91 },
+      { round: 2, device: "stu10", cool: 34, tense: 19, chaos: 64, deep: 37 },
+      { round: 2, device: "stu04", cool: 41, tense: 93, chaos: 7, deep: 27 },
+      { round: 2, device: "stu12", cool: 35, tense: 44, chaos: 28, deep: 43 },
+      { round: 2, device: "stu11", cool: 45, tense: 44, chaos: 57, deep: 33 }
+    ],
+    words: [
+      { device: "stu03#1", word: "weekend" },
+      { device: "stu02#1", word: "context:class difference" },
+      { device: "stu12#1", word: "pixel" },
+      { device: "stu13#1", word: "park" },
+      { device: "stu04#1", word: "context:class distinction" },
+      { device: "stu14#1", word: "calm vacation" },
+      { device: "stu13#2", word: "sunday" },
+      { device: "stu13#3", word: "class" },
+      { device: "stu04#2", word: "form:pointilism" },
+      { device: "stu03#2", word: "paris" },
+      { device: "stu09#1", word: "form:mixture" },
+      { device: "stu13#4", word: "water" },
+      { device: "stu14#2", word: "nature" },
+      { device: "stu10#1", word: "crowded" },
+      { device: "stu13#5", word: "green" },
+      { device: "stu14#3", word: "fresh" },
+      { device: "stu08#1", word: "context:Time" },
+      { device: "stu12#2", word: "stiff" },
+      { device: "stu11#1", word: "form:exhaustion" },
+      { device: "stu04#3", word: "figure:monkey" },
+      { device: "stu14#4", word: "air" },
+      { device: "stu09#2", word: "context:sunday" },
+      { device: "stu02#2", word: "figure:independent" },
+      { device: "stu13#6", word: "trees" },
+      { device: "stu03#3", word: "socialization" },
+      { device: "stu14#5", word: "spacious" },
+      { device: "stu09#3", word: "figure:order" },
+      { device: "stu06#1", word: "context:classification" },
+      { device: "stu10#2", word: "modernity" },
+      { device: "stu11#2", word: "mood:childhood" },
+      { device: "stu06#2", word: "form:gray" },
+      { device: "stu10#3", word: "pixel" }
+    ]
+  };
+
+  function loadDemoData(useReal = true) {
     live.demoOn = true;
     live.pasted = true;
-    DEMO_STUDENTS.forEach(s => {
-      live.r1.set(s.id, { ...s.r1 }); logRow(1, s.id, s.r1);
-      live.r2.set(s.id, { ...s.r2 }); logRow(2, s.id, s.r2);
-      s.words.forEach((w, idx) => live.words.set(`${s.id}#${idx + 1}`, w));
-    });
-    const bDemo = $("#bDemo");
-    if (bDemo) { bDemo.setAttribute("aria-pressed", "true"); bDemo.textContent = "Demo data: ON (24)"; }
+    if (useReal) {
+      REAL_CLASS_DATA.ratings.forEach(r => {
+        const v = { cool: r.cool, tense: r.tense, chaos: r.chaos, deep: r.deep };
+        (r.round === 1 ? live.r1 : live.r2).set(r.device, v);
+        logRow(r.round, r.device, v);
+      });
+      REAL_CLASS_DATA.words.forEach(w => {
+        live.words.set(w.device, w.word);
+      });
+      const bDemo = $("#bDemo");
+      if (bDemo) { bDemo.setAttribute("aria-pressed", "true"); bDemo.textContent = "Class data: 20 Oct (12)"; }
+    } else {
+      DEMO_STUDENTS.forEach(s => {
+        live.r1.set(s.id, { ...s.r1 }); logRow(1, s.id, s.r1);
+        live.r2.set(s.id, { ...s.r2 }); logRow(2, s.id, s.r2);
+        s.words.forEach((w, idx) => live.words.set(`${s.id}#${idx + 1}`, w));
+      });
+      const bDemo = $("#bDemo");
+      if (bDemo) { bDemo.setAttribute("aria-pressed", "true"); bDemo.textContent = "Demo data: ON (24)"; }
+    }
     renderRaw(true);
     renderLive();
   }
 
   function clearDemoData() {
     live.demoOn = false;
-    DEMO_STUDENTS.forEach(s => {
-      live.r1.delete(s.id);
-      live.r2.delete(s.id);
-      s.words.forEach((w, idx) => live.words.delete(`${s.id}#${idx + 1}`));
-    });
-    live.log = live.log.filter(r => !r.line.includes(",stu"));
-    live.logged.forEach(k => { if (k.includes(":stu")) live.logged.delete(k); });
-    if (!live.r1.size && !live.r2.size) live.pasted = false;
+    live.r1.clear();
+    live.r2.clear();
+    live.words.clear();
+    live.log = [];
+    live.logged.clear();
+    live.pasted = false;
     const bDemo = $("#bDemo");
-    if (bDemo) { bDemo.setAttribute("aria-pressed", "false"); bDemo.textContent = "Demo data: OFF"; }
+    if (bDemo) { bDemo.setAttribute("aria-pressed", "false"); bDemo.textContent = "Class data: OFF"; }
     if (typeof resetConceptNetFromLive === "function") resetConceptNetFromLive();
     renderRaw(true);
     renderLive();
