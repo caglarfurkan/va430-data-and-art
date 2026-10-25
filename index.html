@@ -390,6 +390,7 @@
       <div style="display:flex; flex-direction:column; gap:36px">
         <h1 class="mega">Art Data &amp;<br>Data Art</h1>
         <p class="lede">Reading art with data · Making art from data</p>
+        <p style="margin: 0; font: 500 22px/1.4 var(--mono);"><a href="https://caglarfurkan.github.io/va430-data-and-art/" target="_blank" style="color: var(--ikb); text-decoration: none; border-bottom: 2px solid var(--ikb); padding-bottom: 3px;">Interactive presentation: caglarfurkan.github.io/va430-data-and-art ↗</a></p>
       </div>
       <figure class="cover-fig">
         <canvas id="coverCanvas" width="1640" height="1100" aria-label="Seurat's painting turning into dots, pixels and numbers"></canvas>
@@ -908,6 +909,7 @@
   <button type="button" id="bNext" aria-label="Next">→</button>
   <button type="button" id="bDemo" title="Toggle 24-student classroom demo data">Demo data</button>
   <button type="button" id="bResetLive" title="Clear all live votes and words">Reset live</button>
+  <a id="bPdf" href="va430-data-and-art.pdf" download="va430-data-and-art.pdf" title="Download presentation as PDF" style="text-decoration:none; color:inherit; font:500 13px var(--mono); background:rgba(15,16,18,.72); padding:7px 10px; border:1px solid rgba(238,240,242,.25); display:inline-block;">PDF ↗</a>
   <button type="button" id="bNotes">Notes</button>
   <button type="button" id="bFull">Full screen</button>
 </nav>
@@ -2396,6 +2398,7 @@ let userBloomFn = new Function(DEFAULT_BLOOM_CODE);
   }
 
   /* ---------------- start ---------------- */
+  window.deck = { go, slides, loadDemoData, render };
   fit();
   const m = /^#s(\d+)$/.exec(location.hash);
   go(m ? Math.min(slides.length, Math.max(1, +m[1])) - 1 : 0);
