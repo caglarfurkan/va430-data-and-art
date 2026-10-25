@@ -94,6 +94,8 @@
   }
 
   /* -------- Layer 1: Port-443 HTTPS + WSS (ntfy.sh) -------- */
+  let ntfyBlockedUntil = 0;
+
   function ensureNtfy(session) {
     if (!session || ntfySockets.has(session)) return;
     const topic = ntfyTopic(session);
@@ -101,9 +103,14 @@
     ntfySockets.set(session, state);
 
     const fetchHistory = async () => {
+      if (Date.now() < ntfyBlockedUntil) return;
       try {
         const since = state.lastTime ? String(state.lastTime) : "all";
         const res = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=${since}`, { cache: "no-store" });
+        if (res.status === 429) {
+          ntfyBlockedUntil = Date.now() + 120000;
+          return;
+        }
         if (!res.ok) return;
         const text = await res.text();
         const lines = text.split(/\r?\n/).filter(Boolean);
@@ -152,20 +159,24 @@
 
     // Gentle fallback poll only if WebSocket is not connected (every 30s) to avoid 429
     state.pollTimer = setInterval(() => {
-      if (!state.ws || state.ws.readyState !== 1) {
+      if (Date.now() >= ntfyBlockedUntil && (!state.ws || state.ws.readyState !== 1)) {
         fetchHistory();
       }
     }, 30000);
   }
 
   function pubNtfy(session, pkt) {
-    if (!session) return;
+    if (!session || Date.now() < ntfyBlockedUntil) return;
     const topic = ntfyTopic(session);
     try {
       fetch(`https://ntfy.sh/${topic}`, {
         method: "POST",
         body: JSON.stringify(pkt),
         keepalive: true
+      }).then(res => {
+        if (res.status === 429) {
+          ntfyBlockedUntil = Date.now() + 120000;
+        }
       }).catch(() => {});
     } catch (e) {}
   }
